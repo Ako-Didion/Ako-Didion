@@ -64,7 +64,7 @@
 
 <table width="100%">
   <tr>
-    <td width="55%" valign="top">
+    <td width="100%" valign="top">
       <h3 align="center">📌 Projets Épinglés</h3>
 <!-- PINNED:START -->
 🔹 <b><a href="https://github.com/Ako-Didion/dangobot">dangobot</a></b><br><sub>V1 d'un petit osu bot discord</sub><br><code>TypeScript</code><br><br>
@@ -74,22 +74,6 @@
 🔹 <b><a href="https://github.com/BastienAUL/SAE_1.03_AutoConvert">SAE_1.03_AutoConvert</a></b><br><sub>Pas de description</sub><br><code>Shell</code><br><br>
 <!-- PINNED:END -->
     </td>
-    <td width="45%" valign="top">
-      <h3 align="center">🧠 Lignes par langage</h3>
-<!-- LANG_LINES:START -->
-| Langage | Lignes |
-|---|---:|
-| C | 1260 |
-| CSS | 760 |
-| HTML | 493 |
-| Python | 377 |
-| JavaScript | 137 |
-| TypeScript | 43 |
-| Dockerfile | 28 |
-| Bourne Shell | 1 |
-<!-- LANG_LINES:END -->
-    </td>
-  </tr>
 </table>
 
 </div>
