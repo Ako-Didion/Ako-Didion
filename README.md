@@ -55,12 +55,26 @@
 
 ### 🌍 Stats globales
 <!-- STATS:START -->
-_Bientôt disponible via GitHub Actions..._
+![Followers](https://img.shields.io/badge/Followers-6-black?style=for-the-badge&labelColor=white)
+![Public Repos](https://img.shields.io/badge/Public%20Repos-9-black?style=for-the-badge&labelColor=white)
+![Public Gists](https://img.shields.io/badge/Public%20Gists-0-black?style=for-the-badge&labelColor=white)
+![Total Stars](https://img.shields.io/badge/Total%20Stars-5-black?style=for-the-badge&labelColor=white)
 <!-- STATS:END -->
 
 ### 🧠 Lignes par langage (global)
 <!-- LANG_LINES:START -->
-_Bientôt disponible via GitHub Actions..._
+| Langage | Lignes |
+|---|---:|
+| YAML | 5572 |
+| C | 1260 |
+| JSON | 1254 |
+| CSS | 760 |
+| HTML | 493 |
+| Python | 377 |
+| Text | 307 |
+| Markdown | 210 |
+| JavaScript | 137 |
+| TypeScript | 43 |
 <!-- LANG_LINES:END -->
 
 </div>
