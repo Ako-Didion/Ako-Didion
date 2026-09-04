@@ -2,8 +2,8 @@ name: Update Global Profile Stats
 
 on:
   schedule:
-    - cron: "0 6 * * *"   # Runs daily at 06:00 UTC
-  workflow_dispatch:      # Allows you to trigger it manually
+    - cron: "0 6 * * *"   # Tous les jours à 06:00 UTC
+  workflow_dispatch:      # Permet le déclenchement manuel
 
 permissions:
   contents: write
@@ -25,44 +25,71 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y jq cloc
 
-          # 1. Use the GitHub token to prevent API rate limit errors
           AUTH_HEADER="Authorization: token ${GH_TOKEN}"
 
-          # Fetch user info
+          # 1. Infos utilisateur & repos
           USER_JSON=$(curl -s -H "$AUTH_HEADER" https://api.github.com/users/${USERNAME})
           FOLLOWERS=$(echo "$USER_JSON" | jq -r '.followers')
           PUBLIC_REPOS=$(echo "$USER_JSON" | jq -r '.public_repos')
           PUBLIC_GISTS=$(echo "$USER_JSON" | jq -r '.public_gists')
 
-          # Fetch repos list (max 100)
           REPOS_JSON=$(curl -s -H "$AUTH_HEADER" "https://api.github.com/users/${USERNAME}/repos?per_page=100&type=owner")
-
-          # Calculate total stars
           TOTAL_STARS=$(echo "$REPOS_JSON" | jq '[.[].stargazers_count] | add // 0')
 
-          # Prepare temp directory
+          # 2. Clone repos publics pour cloc
           mkdir -p /tmp/all_repos
           cd /tmp/all_repos
 
-          # Clone each public, non-fork repo
           echo "$REPOS_JSON" | jq -r '.[] | select(.fork==false) | .clone_url' | while read -r REPO_URL; do
             git clone --depth=1 "$REPO_URL" || true
           done
 
-          # Calculate lines by language
           cloc . --json --quiet > /tmp/cloc.json
 
-          # Extract top 10 languages and format as a Markdown table
+          # Filter YAML, JSON, Markdown, Text, SVG, XML pour garder le vrai code
           LANG_TABLE=$(jq -r '
             to_entries
-            | map(select(.key != "header" and .key != "SUM"))
+            | map(select(.key != "header" and .key != "SUM" and .key != "YAML" and .key != "JSON" and .key != "Markdown" and .key != "Text" and .key != "XML" and .key != "SVG"))
             | sort_by(.value.code) | reverse
             | .[:10]
             | (["| Langage | Lignes |","|---|---:|"] + (map("| " + .key + " | " + ((.value.code // 0)|tostring) + " |")))
             | .[]
           ' /tmp/cloc.json)
 
-          # Generate stats block (black/white badges)
+          # 3. Récupère les projets épinglés (Pinned Repos) via GraphQL API
+          PINNED_JSON=$(gh api graphql -F username="${USERNAME}" -f query='
+          query($username: String!) {
+            user(login: $username) {
+              pinnedItems(first: 6, types: REPOSITORY) {
+                nodes {
+                  ... on Repository {
+                    name
+                    url
+                    description
+                    primaryLanguage { name }
+                    repositoryTopics(first: 5) {
+                      nodes { topic { name } }
+                    }
+                  }
+                }
+              }
+            }
+          }')
+
+          # Formatage minimaliste des projets épinglés
+          echo "$PINNED_JSON" | jq -r '
+            .data.user.pinnedItems.nodes[] |
+            .name as $name |
+            .url as $url |
+            (.description // "Pas de description") as $desc |
+            (.primaryLanguage.name // "") as $lang |
+            ([.repositoryTopics.nodes[].topic.name] | map("<code>" + . + "</code>") | join(" ")) as $topics |
+            "🔹 <b><a href=\"" + $url + "\">" + $name + "</a></b><br>" +
+            "<sub>" + $desc + "</sub><br>" +
+            (if $topics != "" then $topics else (if $lang != "" then "<code>" + $lang + "</code>" else "" end) end) + "<br><br>"
+          ' > /tmp/pinned_block.md
+
+          # 4. Badges d'en-tête
           cat > /tmp/stats_block.md <<EOF
           ![Followers](https://img.shields.io/badge/Followers-${FOLLOWERS}-black?style=for-the-badge&labelColor=white)
           ![Public Repos](https://img.shields.io/badge/Public%20Repos-${PUBLIC_REPOS}-black?style=for-the-badge&labelColor=white)
@@ -70,10 +97,9 @@ jobs:
           ![Total Stars](https://img.shields.io/badge/Total%20Stars-${TOTAL_STARS}-black?style=for-the-badge&labelColor=white)
           EOF
 
-          # 2. FIX: Return to the repository root before attempting to edit the README
           cd $GITHUB_WORKSPACE
 
-          # Inject STATS
+          # Injecte STATS
           awk '
             BEGIN {inblock=0}
             /<!-- STATS:START -->/ {print; system("cat /tmp/stats_block.md"); inblock=1; next}
@@ -81,7 +107,15 @@ jobs:
             !inblock {print}
           ' README.md > README.tmp && mv README.tmp README.md
 
-          # Inject LANG_LINES
+          # Injecte PINNED
+          awk '
+            BEGIN {inblock=0}
+            /<!-- PINNED:START -->/ {print; system("cat /tmp/pinned_block.md"); inblock=1; next}
+            /<!-- PINNED:END -->/ {inblock=0; print; next}
+            !inblock {print}
+          ' README.md > README.tmp && mv README.tmp README.md
+
+          # Injecte LANG_LINES
           awk -v table="$LANG_TABLE" '
             BEGIN {inblock=0}
             /<!-- LANG_LINES:START -->/ {print; print table; inblock=1; next}
@@ -94,7 +128,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add README.md
-          
-          # Only commit if there are actual changes
-          git diff --cached --quiet || git commit -m "chore: update global stats and language lines"
+          git diff --cached --quiet || git commit -m "chore: update pinned projects and language stats"
           git push
