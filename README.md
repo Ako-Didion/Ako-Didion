@@ -8,13 +8,6 @@
 
 <br>
 
-## 👾 About Me
-
-🎮 Sinking hours into **Osu!** — *This shitty game.*
-
-💬 "Mostly coding for obbyes but trying to make it my job somehow."
-
----
 
 ## 🛠️ Ma Stack Technique
 
@@ -41,15 +34,11 @@
 ![Figma](https://img.shields.io/badge/Figma-%23000000.svg?style=for-the-badge&logo=figma&logoColor=white) 
 ![Photoshop](https://img.shields.io/badge/Photoshop-%23000000.svg?style=for-the-badge&logo=adobe%20photoshop&logoColor=white)
 
----
+<br>
+
 
 
 ## 🚀 Projet en cours & Statistiques
-
-<div align="center">
-  <!-- Trophées GitHub -->
-  <img src="https://github-profile-trophy.vercel.app/?username=Ako-Didion&theme=radical&no-frame=true&no-bg=true&margin-w=15&v=3" alt="Trophées" />
-</div>
 
 <br>
 
@@ -66,8 +55,6 @@
   <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=Ako-Didion&layout=donut&theme=dark&hide_border=true&bg_color=000000&title_color=ffffff&v=3" alt="Langages" height="165" />
   <img src="https://github-readme-streak-stats.herokuapp.com/?user=Ako-Didion&theme=dark&hide_border=true&background=000000&labels=ffffff&dates=ffffff&ring=ffffff&fire=ffffff&v=3" alt="GitHub Streak" height="165" />
 </div>
-
----
 
 </div>
 
