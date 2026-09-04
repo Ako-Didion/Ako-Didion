@@ -1,26 +1,18 @@
 <div align="center">
-  <!-- Remplace le lien ci-dessous par ton image ou GIF chill -->
-<img width="1920" height="1000" alt="anime-girls-忘川の泉眼-anime-water-wallpaper-9606861b6a4fb4b2d7d3f795605a620a" src="https://github.com/user-attachments/assets/4ee9adbf-2825-4533-869b-d83954a87ee4" />
+  <!-- Bannière -->
+<img width="1920" height="1000" alt="anime-girls-忘川の泉眼-anime-water-wallpaper-9606861b6a4fb4b2d7d3f795605a620a" src="https://github.com/user-attachments/assets/0c3af1c3-e496-4caf-b5c2-54bbb16608b6" />
 
-  <br><br>
 
-  <!-- Boutons sociaux fixés sur une seule ligne (aucun trait bleu) -->
+  <!-- Réseaux Sociaux -->
   <a href="https://discord.com/" target="_blank"><img src="https://img.shields.io/badge/DISCORD-COCOLOCO23-000000?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a><a href="https://steamcommunity.com/" target="_blank"><img src="https://img.shields.io/badge/STEAM-AKO-000000?style=for-the-badge&logo=steam&logoColor=white" alt="Steam"></a><a href="https://youtube.com/" target="_blank"><img src="https://img.shields.io/badge/YOUTUBE-AKKO-000000?style=for-the-badge&logo=youtube&logoColor=white" alt="YouTube"></a>
-</div>
 
 <br>
 
 ## 👾 About Me
 
-- 🔭 **Currently working on :**
-<br>
-<!-- REMPLACE "NOM_DU_PROJET" PAR LE NOM DE TON REPO -->
-<a href="https://github.com/Ako-Didion/DangoBot">
-  <img src="https://github-readme-stats.vercel.app/api/pin/?username=Ako-Didion&repo=NOM_DU_PROJET&theme=dark&bg_color=000000&hide_border=true&title_color=ffffff&text_color=a3a3a3&icon_color=ffffff" alt="Projet actuel" />
-</a>
-<br><br>
-- 🎮 Sinking hours into **[Nom du jeu]** — *I beat the game, now I'm just messing around with mods and breaking it.*
-- 💬 Ask me about **[Tes domaines d'expertise]**
+🎮 Sinking hours into **Osu!** — *This shitty game.*
+
+💬 "Mostly coding for obbyes but trying to make it my job somehow."
 
 ---
 
@@ -51,24 +43,32 @@
 
 ---
 
-## 📊 Statistiques & Trophées
+
+## 🚀 Projet en cours & Statistiques
 
 <div align="center">
-  <!-- Trophées GitHub avec cache-buster -->
-  <img src="https://github-profile-trophy.vercel.app/?username=Ako-Didion&theme=radical&no-frame=true&no-bg=true&margin-w=15&v=1" alt="Trophées" />
+  <!-- Trophées GitHub -->
+  <img src="https://github-profile-trophy.vercel.app/?username=Ako-Didion&theme=radical&no-frame=true&no-bg=true&margin-w=15&v=3" alt="Trophées" />
 </div>
 
 <br>
 
 <div align="center">
-  <!-- Stats générales avec cache-buster -->
-  <img src="https://github-readme-stats.vercel.app/api?username=Ako-Didion&show_icons=true&theme=dark&hide_border=true&bg_color=000000&title_color=ffffff&icon_color=ffffff&v=1" alt="Statistiques GitHub" height="165" />
-  
-  <!-- Top langages avec cache-buster -->
-  <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=Ako-Didion&layout=donut&theme=dark&hide_border=true&bg_color=000000&title_color=ffffff&v=1" alt="Langages" height="165" />
+  <!-- Projet Dangobot et Stats générales (avec count_private) alignés côte à côte -->
+  <a href="https://github.com/Ako-Didion/dangobot">
+    <img src="https://github-readme-stats.vercel.app/api/pin/?username=Ako-Didion&repo=dangobot&theme=dark&bg_color=000000&hide_border=true&title_color=ffffff&text_color=a3a3a3&icon_color=ffffff&v=3" alt="Projet Dangobot" height="165" />
+  </a>
+  <img src="https://github-readme-stats.vercel.app/api?username=Ako-Didion&show_icons=true&theme=dark&hide_border=true&bg_color=000000&title_color=ffffff&icon_color=ffffff&count_private=true&v=3" alt="Statistiques GitHub" height="165" />
 </div>
 
 <div align="center">
-  <!-- Série de contributions avec cache-buster -->
-  <img src="https://github-readme-streak-stats.herokuapp.com/?user=Ako-Didion&theme=dark&hide_border=true&background=000000&labels=ffffff&dates=ffffff&ring=ffffff&fire=ffffff&v=1" alt="GitHub Streak" />
+  <!-- Langages et Streak alignés en dessous -->
+  <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=Ako-Didion&layout=donut&theme=dark&hide_border=true&bg_color=000000&title_color=ffffff&v=3" alt="Langages" height="165" />
+  <img src="https://github-readme-streak-stats.herokuapp.com/?user=Ako-Didion&theme=dark&hide_border=true&background=000000&labels=ffffff&dates=ffffff&ring=ffffff&fire=ffffff&v=3" alt="GitHub Streak" height="165" />
 </div>
+
+---
+
+</div>
+
+
