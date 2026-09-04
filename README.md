@@ -1,17 +1,12 @@
 <div align="center">
   <!-- L'image principale : remplace le lien par ton image "chill" ou un GIF de jeu -->
-  <img width="1920" height="1080" alt="anime-girls-sword-fate-series-blonde-wallpaper-a9d0b87d21ba4d0bc647789f8051e6ad" src="https://github.com/user-attachments/assets/7171a09e-14e5-4441-8f2d-56e44559c135" />
+<img width="3840" height="1080" alt="fate-series-anime-girls-blonde-saber-lily-wallpaper-c1944aaa008ec5f2f06223948e0e602d" src="https://github.com/user-attachments/assets/3df4fc3a-8eb9-4163-9e02-5b18a201f572" />
 
-  <!-- Les badges sociaux façon "boutons" (remplace les liens) -->
-  <a href="https://discord.com/" target="_blank">
-    <img src="https://img.shields.io/badge/DISCORD-cocoloco23-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord">
-  </a>
-  <a href="https://steamcommunity.com/" target="_blank">
-    <img src="https://img.shields.io/badge/STEAM-Ako-000000?style=for-the-badge&logo=steam&logoColor=white" alt="Steam">
-  </a>
-  <a href="https://youtube.com/" target="_blank">
-    <img src="https://img.shields.io/badge/YOUTUBE-Akko-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="YouTube">
-  </a>
+
+<div align="center">
+  <a href="https://discord.com/" target="_blank"><img src="https://img.shields.io/badge/DISCORD-COCOLOCO23-000000?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a><a href="https://steamcommunity.com/" target="_blank"><img src="https://img.shields.io/badge/STEAM-AKO-000000?style=for-the-badge&logo=steam&logoColor=white" alt="Steam"></a><a href="https://youtube.com/" target="_blank"><img src="https://img.shields.io/badge/YOUTUBE-AKKO-000000?style=for-the-badge&logo=youtube&logoColor=white" alt="YouTube"></a>
+</div>
+  
 </div>
 
 <br>
