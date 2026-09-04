@@ -1,0 +1,100 @@
+name: Update Global Profile Stats
+
+on:
+  schedule:
+    - cron: "0 6 * * *"   # Runs daily at 06:00 UTC
+  workflow_dispatch:      # Allows you to trigger it manually
+
+permissions:
+  contents: write
+
+jobs:
+  update-stats:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout profile repo
+        uses: actions/checkout@v4
+
+      - name: Generate stats block
+        env:
+          USERNAME: Ako-Didion
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          sudo apt-get update
+          sudo apt-get install -y jq cloc
+
+          # 1. Use the GitHub token to prevent API rate limit errors
+          AUTH_HEADER="Authorization: token ${GH_TOKEN}"
+
+          # Fetch user info
+          USER_JSON=$(curl -s -H "$AUTH_HEADER" https://api.github.com/users/${USERNAME})
+          FOLLOWERS=$(echo "$USER_JSON" | jq -r '.followers')
+          PUBLIC_REPOS=$(echo "$USER_JSON" | jq -r '.public_repos')
+          PUBLIC_GISTS=$(echo "$USER_JSON" | jq -r '.public_gists')
+
+          # Fetch repos list (max 100)
+          REPOS_JSON=$(curl -s -H "$AUTH_HEADER" "https://api.github.com/users/${USERNAME}/repos?per_page=100&type=owner")
+
+          # Calculate total stars
+          TOTAL_STARS=$(echo "$REPOS_JSON" | jq '[.[].stargazers_count] | add // 0')
+
+          # Prepare temp directory
+          mkdir -p /tmp/all_repos
+          cd /tmp/all_repos
+
+          # Clone each public, non-fork repo
+          echo "$REPOS_JSON" | jq -r '.[] | select(.fork==false) | .clone_url' | while read -r REPO_URL; do
+            git clone --depth=1 "$REPO_URL" || true
+          done
+
+          # Calculate lines by language
+          cloc . --json --quiet > /tmp/cloc.json
+
+          # Extract top 10 languages and format as a Markdown table
+          LANG_TABLE=$(jq -r '
+            to_entries
+            | map(select(.key != "header" and .key != "SUM"))
+            | sort_by(.value.code) | reverse
+            | .[:10]
+            | (["| Langage | Lignes |","|---|---:|"] + (map("| " + .key + " | " + ((.value.code // 0)|tostring) + " |")))
+            | .[]
+          ' /tmp/cloc.json)
+
+          # Generate stats block (black/white badges)
+          cat > /tmp/stats_block.md <<EOF
+          ![Followers](https://img.shields.io/badge/Followers-${FOLLOWERS}-black?style=for-the-badge&labelColor=white)
+          ![Public Repos](https://img.shields.io/badge/Public%20Repos-${PUBLIC_REPOS}-black?style=for-the-badge&labelColor=white)
+          ![Public Gists](https://img.shields.io/badge/Public%20Gists-${PUBLIC_GISTS}-black?style=for-the-badge&labelColor=white)
+          ![Total Stars](https://img.shields.io/badge/Total%20Stars-${TOTAL_STARS}-black?style=for-the-badge&labelColor=white)
+          EOF
+
+          # 2. FIX: Return to the repository root before attempting to edit the README
+          cd $GITHUB_WORKSPACE
+
+          # Inject STATS
+          awk '
+            BEGIN {inblock=0}
+            /<!-- STATS:START -->/ {print; system("cat /tmp/stats_block.md"); inblock=1; next}
+            /<!-- STATS:END -->/ {inblock=0; print; next}
+            !inblock {print}
+          ' README.md > README.tmp && mv README.tmp README.md
+
+          # Inject LANG_LINES
+          awk -v table="$LANG_TABLE" '
+            BEGIN {inblock=0}
+            /<!-- LANG_LINES:START -->/ {print; print table; inblock=1; next}
+            /<!-- LANG_LINES:END -->/ {inblock=0; print; next}
+            !inblock {print}
+          ' README.md > README.tmp && mv README.tmp README.md
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          
+          # Only commit if there are actual changes
+          git diff --cached --quiet || git commit -m "chore: update global stats and language lines"
+          git push
