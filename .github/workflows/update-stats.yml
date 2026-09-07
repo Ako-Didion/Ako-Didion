@@ -22,51 +22,45 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -euo pipefail
+          set -e
           sudo apt-get update -qq
           sudo apt-get install -y -qq jq cloc
 
           AUTH_HEADER="Authorization: Bearer ${GITHUB_TOKEN}"
 
           # 1. Infos utilisateur & repos
-          USER_JSON=$(curl -s -f -H "$AUTH_HEADER" "https://api.github.com/users/${USERNAME}")
+          USER_JSON=$(curl -s -H "$AUTH_HEADER" "https://api.github.com/users/${USERNAME}")
           FOLLOWERS=$(echo "$USER_JSON" | jq -r '.followers // 0')
           PUBLIC_REPOS=$(echo "$USER_JSON" | jq -r '.public_repos // 0')
           PUBLIC_GISTS=$(echo "$USER_JSON" | jq -r '.public_gists // 0')
 
-          REPOS_JSON=$(curl -s -f -H "$AUTH_HEADER" "https://api.github.com/users/${USERNAME}/repos?per_page=100&type=owner")
+          REPOS_JSON=$(curl -s -H "$AUTH_HEADER" "https://api.github.com/users/${USERNAME}/repos?per_page=100&type=owner")
           TOTAL_STARS=$(echo "$REPOS_JSON" | jq '[.[].stargazers_count] | add // 0')
 
-          # 2. Clones ultra-légers pour analyse cloc
+          # 2. Clones légers pour cloc
           mkdir -p /tmp/all_repos
           cd /tmp/all_repos
 
-          echo "$REPOS_JSON" | jq -r '.[] | select(.fork == false) | .clone_url' | while read -r REPO_URL; do
-            git clone --depth=1 --single-branch "$REPO_URL" 2>/dev/null || true
+          REPO_URLS=$(echo "$REPOS_JSON" | jq -r '.[] | select(.fork == false) | .clone_url' || true)
+          for url in $REPO_URLS; do
+            git clone --depth=1 --single-branch "$url" 2>/dev/null || true
           done
 
           cloc . --json --quiet \
             --exclude-dir=node_modules,vendor,.git,dist,build,target,coverage,out \
             --exclude-ext=lock,min.js,min.css \
-            > /tmp/cloc.json
+            > /tmp/cloc.json || echo "{}" > /tmp/cloc.json
 
-          # 3. Tableau avec jauge de progression visuelle
+          # 3. Tableau des langages
           jq -r '
             to_entries
             | map(select(.key != "header" and .key != "SUM" and .key != "YAML" and .key != "JSON" and .key != "Markdown" and .key != "Text" and .key != "XML" and .key != "SVG"))
             | sort_by(.value.code) | reverse
-            | .[:8] as $top
-            | ($top | map(.value.code) | add) as $total
-            | (["| Langage | Lignes | Part |", "|:---|---:|:---|"] + 
-              ($top | map(
-                .key as $k |
-                .value.code as $c |
-                (($c / ($total // 1) * 100) | round) as $pct |
-                (($pct / 10) | floor) as $bars |
-                ("| **" + $k + "** | " + ($c|tostring) + " | `" + ("██████████"[:$bars*3]) + ("░░░░░░░░░░"[:(10-$bars)*3]) + " " + ($pct|tostring) + "%` |")
-              )))
+            | .[:8]
+            | (["| Langage | Lignes de code |", "|:---|---:|"] + 
+              map("| **" + .key + "** | " + ((.value.code // 0)|tostring) + " |"))
             | .[]
-          ' /tmp/cloc.json > /tmp/lang_table.md
+          ' /tmp/cloc.json > /tmp/lang_table.md || echo "Aucune donnée disponible" > /tmp/lang_table.md
 
           # 4. Projets épinglés via GraphQL
           PINNED_JSON=$(gh api graphql -F username="${USERNAME}" -f query='
@@ -79,7 +73,7 @@ jobs:
                     url
                     description
                     stargazers { totalCount }
-                    primaryLanguage { name color }
+                    primaryLanguage { name }
                     repositoryTopics(first: 4) {
                       nodes { topic { name } }
                     }
@@ -87,7 +81,7 @@ jobs:
                 }
               }
             }
-          }')
+          }' || echo '{"data":{"user":{"pinnedItems":{"nodes":[]}}}}')
 
           echo "$PINNED_JSON" | jq -r '
             .data.user.pinnedItems.nodes[] |
@@ -102,9 +96,9 @@ jobs:
             (if $lang != "" then "🔹 **" + $lang + "** " else "" end) +
             (if $stars > 0 then "⭐ " + ($stars|tostring) + " " else "" end) +
             (if $topics != "" then " • " + $topics else "" end) + "\n\n---"
-          ' > /tmp/pinned_block.md
+          ' > /tmp/pinned_block.md || echo "" > /tmp/pinned_block.md
 
-          # 5. Badges d'en-tête centrés
+          # 5. Badges
           cat > /tmp/stats_block.md <<EOF
           <p align="center">
             <img src="https://img.shields.io/badge/Followers-${FOLLOWERS}-000000?style=for-the-badge&logo=github&logoColor=white" />
@@ -116,7 +110,7 @@ jobs:
 
           cd "$GITHUB_WORKSPACE"
 
-          # 6. Remplacement atomique dans le README
+          # 6. Injection sécurisée
           inject_block() {
             local tag="$1"
             local file="$2"
@@ -142,5 +136,4 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add README.md
-          git diff --staged --quiet || git commit -m "chore(stats): update profile metrics and pinned projects"
-          git push
+          git diff --staged --quiet || (git commit -m "chore(stats): update profile metrics and pinned projects" && git push)
