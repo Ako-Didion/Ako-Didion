@@ -28,7 +28,7 @@ jobs:
 
           AUTH_HEADER="Authorization: Bearer ${GITHUB_TOKEN}"
 
-          # 1. Infos utilisateur & repos
+          # 1. Infos utilisateur & stats générales
           USER_JSON=$(curl -s -H "$AUTH_HEADER" "https://api.github.com/users/${USERNAME}")
           FOLLOWERS=$(echo "$USER_JSON" | jq -r '.followers // 0')
           PUBLIC_REPOS=$(echo "$USER_JSON" | jq -r '.public_repos // 0')
@@ -37,11 +37,11 @@ jobs:
           REPOS_JSON=$(curl -s -H "$AUTH_HEADER" "https://api.github.com/users/${USERNAME}/repos?per_page=100&type=owner")
           TOTAL_STARS=$(echo "$REPOS_JSON" | jq '[.[].stargazers_count] | add // 0')
 
-          # 2. Clones légers pour cloc
+          # 2. Analyse des lignes de code via cloc
           mkdir -p /tmp/all_repos
           cd /tmp/all_repos
 
-          REPO_URLS=$(echo "$REPOS_JSON" | jq -r '.[] | select(.fork == false) | .clone_url' || true)
+          REPO_URLS=$(echo "$REPOS_JSON" | jq -r '.[] | select(.fork == false) | .clone_url')
           for url in $REPO_URLS; do
             git clone --depth=1 --single-branch "$url" 2>/dev/null || true
           done
@@ -51,7 +51,7 @@ jobs:
             --exclude-ext=lock,min.js,min.css \
             > /tmp/cloc.json || echo "{}" > /tmp/cloc.json
 
-          # 3. Tableau des langages en HTML pour un affichage parfait dans <td>
+          # Tableau HTML des langages
           echo "<table><thead><tr><th>Langage</th><th align=\"right\">Lignes</th></tr></thead><tbody>" > /tmp/lang_table.md
           jq -r '
             to_entries
@@ -62,40 +62,54 @@ jobs:
           ' /tmp/cloc.json >> /tmp/lang_table.md
           echo "</tbody></table>" >> /tmp/lang_table.md
 
-          # 4. Projets épinglés (GraphQL)
-          PINNED_JSON=$(gh api graphql -f query='
+          # 3. Récupération des projets épinglés (GraphQL fiable via fichier)
+          cat << 'EOF' > /tmp/query.graphql
           query {
-            user(login: "'"${USERNAME}"'") {
+            user(login: "Ako-Didion") {
               pinnedItems(first: 6, types: REPOSITORY) {
                 nodes {
                   ... on Repository {
                     name
                     url
                     description
-                    stargazers { totalCount }
-                    primaryLanguage { name }
-                    repositoryTopics(first: 3) {
-                      nodes { topic { name } }
+                    primaryLanguage {
+                      name
+                    }
+                    repositoryTopics(first: 4) {
+                      nodes {
+                        topic {
+                          name
+                        }
+                      }
                     }
                   }
                 }
               }
             }
-          }' || echo '{"data":{"user":{"pinnedItems":{"nodes":[]}}}}')
+          }
+          EOF
 
-          echo "$PINNED_JSON" | jq -r '
+          # Appel API avec token forcé
+          gh api graphql --input /tmp/query.graphql > /tmp/pinned.json || cat /tmp/query.graphql
+
+          echo "=== DEBUG GRAPHQL ==="
+          cat /tmp/pinned.json
+          echo "======================"
+
+          # Mise en forme HTML pour la cellule du tableau
+          jq -r '
             .data.user.pinnedItems.nodes[]? |
             .name as $name |
             .url as $url |
-            (.description // "Aucune description") as $desc |
+            (.description // "Pas de description") as $desc |
             (.primaryLanguage.name // "") as $lang |
             ([.repositoryTopics.nodes[].topic.name] | map("<code>" + . + "</code>") | join(" ")) as $topics |
-            "🔹 <b><a href=\"" + $url + "\">" + $name + "</a></b><br>" +
+            "<p>🔹 <b><a href=\"" + $url + "\">" + $name + "</a></b><br>" +
             "<sub>" + $desc + "</sub><br>" +
-            (if $topics != "" then $topics else (if $lang != "" then "<code>" + $lang + "</code>" else "" end) end) + "<br><br>"
-          ' > /tmp/pinned_block.md
+            (if $topics != "" then $topics else (if $lang != "" then "<code>" + $lang + "</code>" else "" end) end) + "</p>"
+          ' /tmp/pinned.json > /tmp/pinned_block.md
 
-          # 5. Badges
+          # 4. Badges de profil
           cat > /tmp/stats_block.md <<EOF
           <p align="center">
             <img src="https://img.shields.io/badge/Followers-${FOLLOWERS}-000000?style=for-the-badge&logo=github&logoColor=white" />
@@ -107,30 +121,31 @@ jobs:
 
           cd "$GITHUB_WORKSPACE"
 
-          # 6. Injection sécurisée
-          inject_block() {
-            local tag="$1"
-            local file="$2"
-            awk -v marker="$tag" -v datafile="$file" '
-              $0 ~ "<!-- " marker ":START -->" {
-                print
-                while ((getline line < datafile) > 0) print line
-                close(datafile)
-                skip=1
-                next
-              }
-              $0 ~ "<!-- " marker ":END -->" { skip=0 }
-              !skip { print }
-            ' README.md > README.tmp && mv README.tmp README.md
-          }
+          # 5. Injection dans le README
+          awk '
+            BEGIN {inblock=0}
+            /<!-- STATS:START -->/ {print; system("cat /tmp/stats_block.md"); inblock=1; next}
+            /<!-- STATS:END -->/ {inblock=0; print; next}
+            !inblock {print}
+          ' README.md > README.tmp && mv README.tmp README.md
 
-          inject_block "STATS" "/tmp/stats_block.md"
-          inject_block "PINNED" "/tmp/pinned_block.md"
-          inject_block "LANG_LINES" "/tmp/lang_table.md"
+          awk '
+            BEGIN {inblock=0}
+            /<!-- PINNED:START -->/ {print; system("cat /tmp/pinned_block.md"); inblock=1; next}
+            /<!-- PINNED:END -->/ {inblock=0; print; next}
+            !inblock {print}
+          ' README.md > README.tmp && mv README.tmp README.md
+
+          awk '
+            BEGIN {inblock=0}
+            /<!-- LANG_LINES:START -->/ {print; system("cat /tmp/lang_table.md"); inblock=1; next}
+            /<!-- LANG_LINES:END -->/ {inblock=0; print; next}
+            !inblock {print}
+          ' README.md > README.tmp && mv README.tmp README.md
 
       - name: Commit and push changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add README.md
-          git diff --staged --quiet || (git commit -m "chore(stats): update profile metrics and pinned projects" && git push)
+          git diff --staged --quiet || (git commit -m "chore(stats): update profile metrics" && git push)
