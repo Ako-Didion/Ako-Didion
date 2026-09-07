@@ -20,7 +20,6 @@ jobs:
         env:
           USERNAME: Ako-Didion
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -e
           sudo apt-get update -qq
@@ -62,15 +61,16 @@ jobs:
           ' /tmp/cloc.json >> /tmp/lang_table.md
           echo "</tbody></table>" >> /tmp/lang_table.md
 
-# 3. Alternative REST : prend tes repos triés par activité récente
+          # 3. Alternative REST : prend tes repos publics récents
           echo "$REPOS_JSON" | jq -r '
-            sort_by(.pushed_at) | reverse
+            map(select(.fork == false and .name != "'"${USERNAME}"'"))
+            | sort_by(.pushed_at) | reverse
             | .[:5][]
             | "<p>🔹 <b><a href=\"" + .html_url + "\">" + .name + "</a></b><br>" +
-              "<sub>" + (.description // "Aucune description") + "</sub><br>" +
+              "<sub>" + ((.description // "Aucune description") | @html) + "</sub><br>" +
               (if .language then "<code>" + .language + "</code>" else "" end) + "</p>"
           ' > /tmp/pinned_block.md
-          
+
           # 4. Badges de profil
           cat > /tmp/stats_block.md <<EOF
           <p align="center">
