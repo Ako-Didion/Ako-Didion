@@ -52,6 +52,12 @@
 
   ### 🌍 Stats globales
 <!-- STATS:START -->
+<p align="center">
+  <img src="https://img.shields.io/badge/Followers-6-000000?style=for-the-badge&logo=github&logoColor=white" />
+  <img src="https://img.shields.io/badge/Public_Repos-9-000000?style=for-the-badge&logo=git&logoColor=white" />
+  <img src="https://img.shields.io/badge/Public_Gists-0-000000?style=for-the-badge&logo=github&logoColor=white" />
+  <img src="https://img.shields.io/badge/Total_Stars-5-000000?style=for-the-badge&logo=readdotcv&logoColor=white" />
+</p>
 <!-- STATS:END -->
 
   <br>
@@ -66,6 +72,16 @@
       <td width="50%" valign="top">
         <h3 align="center">📊 Répartition des Langages</h3>
 <!-- LANG_LINES:START -->
+| Langage | Lignes de code |
+|:---|---:|
+| **C** | 1260 |
+| **CSS** | 760 |
+| **HTML** | 493 |
+| **Python** | 377 |
+| **TypeScript** | 371 |
+| **JavaScript** | 137 |
+| **Dockerfile** | 28 |
+| **Bourne Shell** | 1 |
 <!-- LANG_LINES:END -->
       </td>
     </tr>
