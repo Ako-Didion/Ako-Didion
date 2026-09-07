@@ -82,6 +82,16 @@
       <td width="50%" valign="top">
 
 <!-- LANG_LINES:START -->
+<table><thead><tr><th>Langage</th><th align="right">Lignes</th></tr></thead><tbody>
+<tr><td><b>C</b></td><td align="right">1260</td></tr>
+<tr><td><b>CSS</b></td><td align="right">760</td></tr>
+<tr><td><b>HTML</b></td><td align="right">493</td></tr>
+<tr><td><b>Python</b></td><td align="right">377</td></tr>
+<tr><td><b>TypeScript</b></td><td align="right">371</td></tr>
+<tr><td><b>JavaScript</b></td><td align="right">137</td></tr>
+<tr><td><b>Dockerfile</b></td><td align="right">28</td></tr>
+<tr><td><b>Bourne Shell</b></td><td align="right">1</td></tr>
+</tbody></table>
 <!-- LANG_LINES:END -->
 
       </td>
