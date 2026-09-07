@@ -60,29 +60,30 @@
 </p>
 <!-- STATS:END -->
 
-  <br>
+<br>
 
+  <!-- Projets Épinglés & Répartition -->
   <table width="100%">
     <tr>
+      <td width="50%" align="center" valign="top">
+        <h3>📌 Projets Épinglés</h3>
+      </td>
+      <td width="50%" align="center" valign="top">
+        <h3>📊 Répartition des Langages</h3>
+      </td>
+    </tr>
+    <tr>
       <td width="50%" valign="top">
-        <h3 align="center">📌 Projets Épinglés</h3>
+
 <!-- PINNED:START -->
 <!-- PINNED:END -->
+
       </td>
       <td width="50%" valign="top">
-        <h3 align="center">📊 Répartition des Langages</h3>
+
 <!-- LANG_LINES:START -->
-| Langage | Lignes de code |
-|:---|---:|
-| **C** | 1260 |
-| **CSS** | 760 |
-| **HTML** | 493 |
-| **Python** | 377 |
-| **TypeScript** | 371 |
-| **JavaScript** | 137 |
-| **Dockerfile** | 28 |
-| **Bourne Shell** | 1 |
 <!-- LANG_LINES:END -->
+
       </td>
     </tr>
   </table>
