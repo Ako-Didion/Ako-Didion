@@ -62,9 +62,8 @@ jobs:
           ' /tmp/cloc.json >> /tmp/lang_table.md
           echo "</tbody></table>" >> /tmp/lang_table.md
 
-          # 3. Récupération des projets épinglés (GraphQL fiable via fichier)
-          cat << 'EOF' > /tmp/query.graphql
-          query {
+          # 3. Récupération des projets épinglés (GraphQL)
+          QUERY='query {
             user(login: "Ako-Didion") {
               pinnedItems(first: 6, types: REPOSITORY) {
                 nodes {
@@ -86,28 +85,13 @@ jobs:
                 }
               }
             }
-          }
-          EOF
+          }'
 
-          # Appel API avec token forcé
-          gh api graphql --input /tmp/query.graphql > /tmp/pinned.json || cat /tmp/query.graphql
+          gh api graphql -f query="$QUERY" > /tmp/pinned.json
 
           echo "=== DEBUG GRAPHQL ==="
           cat /tmp/pinned.json
           echo "======================"
-
-          # Mise en forme HTML pour la cellule du tableau
-          jq -r '
-            .data.user.pinnedItems.nodes[]? |
-            .name as $name |
-            .url as $url |
-            (.description // "Pas de description") as $desc |
-            (.primaryLanguage.name // "") as $lang |
-            ([.repositoryTopics.nodes[].topic.name] | map("<code>" + . + "</code>") | join(" ")) as $topics |
-            "<p>🔹 <b><a href=\"" + $url + "\">" + $name + "</a></b><br>" +
-            "<sub>" + $desc + "</sub><br>" +
-            (if $topics != "" then $topics else (if $lang != "" then "<code>" + $lang + "</code>" else "" end) end) + "</p>"
-          ' /tmp/pinned.json > /tmp/pinned_block.md
 
           # 4. Badges de profil
           cat > /tmp/stats_block.md <<EOF
