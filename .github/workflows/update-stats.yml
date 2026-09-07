@@ -2,8 +2,8 @@ name: Update Global Profile Stats
 
 on:
   schedule:
-    - cron: "0 6 * * *"   # Tous les jours à 06:00 UTC
-  workflow_dispatch:      # Permet le déclenchement manuel
+    - cron: "0 6 * * *"
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -19,44 +19,56 @@ jobs:
       - name: Generate stats block
         env:
           USERNAME: Ako-Didion
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -e
-          sudo apt-get update
-          sudo apt-get install -y jq cloc
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq jq cloc
 
-          AUTH_HEADER="Authorization: token ${GH_TOKEN}"
+          AUTH_HEADER="Authorization: Bearer ${GITHUB_TOKEN}"
 
           # 1. Infos utilisateur & repos
-          USER_JSON=$(curl -s -H "$AUTH_HEADER" https://api.github.com/users/${USERNAME})
-          FOLLOWERS=$(echo "$USER_JSON" | jq -r '.followers')
-          PUBLIC_REPOS=$(echo "$USER_JSON" | jq -r '.public_repos')
-          PUBLIC_GISTS=$(echo "$USER_JSON" | jq -r '.public_gists')
+          USER_JSON=$(curl -s -f -H "$AUTH_HEADER" "https://api.github.com/users/${USERNAME}")
+          FOLLOWERS=$(echo "$USER_JSON" | jq -r '.followers // 0')
+          PUBLIC_REPOS=$(echo "$USER_JSON" | jq -r '.public_repos // 0')
+          PUBLIC_GISTS=$(echo "$USER_JSON" | jq -r '.public_gists // 0')
 
-          REPOS_JSON=$(curl -s -H "$AUTH_HEADER" "https://api.github.com/users/${USERNAME}/repos?per_page=100&type=owner")
+          REPOS_JSON=$(curl -s -f -H "$AUTH_HEADER" "https://api.github.com/users/${USERNAME}/repos?per_page=100&type=owner")
           TOTAL_STARS=$(echo "$REPOS_JSON" | jq '[.[].stargazers_count] | add // 0')
 
-          # 2. Clone repos publics pour cloc
+          # 2. Clones ultra-légers pour analyse cloc
           mkdir -p /tmp/all_repos
           cd /tmp/all_repos
 
-          echo "$REPOS_JSON" | jq -r '.[] | select(.fork==false) | .clone_url' | while read -r REPO_URL; do
-            git clone --depth=1 "$REPO_URL" || true
+          echo "$REPOS_JSON" | jq -r '.[] | select(.fork == false) | .clone_url' | while read -r REPO_URL; do
+            git clone --depth=1 --single-branch "$REPO_URL" 2>/dev/null || true
           done
 
-          cloc . --json --quiet > /tmp/cloc.json
+          cloc . --json --quiet \
+            --exclude-dir=node_modules,vendor,.git,dist,build,target,coverage,out \
+            --exclude-ext=lock,min.js,min.css \
+            > /tmp/cloc.json
 
-          # Filter YAML, JSON, Markdown, Text, SVG, XML pour garder le vrai code
-          LANG_TABLE=$(jq -r '
+          # 3. Tableau avec jauge de progression visuelle
+          jq -r '
             to_entries
             | map(select(.key != "header" and .key != "SUM" and .key != "YAML" and .key != "JSON" and .key != "Markdown" and .key != "Text" and .key != "XML" and .key != "SVG"))
             | sort_by(.value.code) | reverse
-            | .[:10]
-            | (["| Langage | Lignes |","|---|---:|"] + (map("| " + .key + " | " + ((.value.code // 0)|tostring) + " |")))
+            | .[:8] as $top
+            | ($top | map(.value.code) | add) as $total
+            | (["| Langage | Lignes | Part |", "|:---|---:|:---|"] + 
+              ($top | map(
+                .key as $k |
+                .value.code as $c |
+                (($c / ($total // 1) * 100) | round) as $pct |
+                (($pct / 10) | floor) as $bars |
+                ("| **" + $k + "** | " + ($c|tostring) + " | `" + ("██████████"[:$bars*3]) + ("░░░░░░░░░░"[:(10-$bars)*3]) + " " + ($pct|tostring) + "%` |")
+              )))
             | .[]
-          ' /tmp/cloc.json)
+          ' /tmp/cloc.json > /tmp/lang_table.md
 
-          # 3. Récupère les projets épinglés (Pinned Repos) via GraphQL API
+          # 4. Projets épinglés via GraphQL
           PINNED_JSON=$(gh api graphql -F username="${USERNAME}" -f query='
           query($username: String!) {
             user(login: $username) {
@@ -66,8 +78,9 @@ jobs:
                     name
                     url
                     description
-                    primaryLanguage { name }
-                    repositoryTopics(first: 5) {
+                    stargazers { totalCount }
+                    primaryLanguage { name color }
+                    repositoryTopics(first: 4) {
                       nodes { topic { name } }
                     }
                   }
@@ -76,57 +89,58 @@ jobs:
             }
           }')
 
-          # Formatage minimaliste des projets épinglés
           echo "$PINNED_JSON" | jq -r '
             .data.user.pinnedItems.nodes[] |
             .name as $name |
             .url as $url |
-            (.description // "Pas de description") as $desc |
+            (.description // "Aucune description") as $desc |
             (.primaryLanguage.name // "") as $lang |
+            (.stargazers.totalCount // 0) as $stars |
             ([.repositoryTopics.nodes[].topic.name] | map("<code>" + . + "</code>") | join(" ")) as $topics |
-            "🔹 <b><a href=\"" + $url + "\">" + $name + "</a></b><br>" +
-            "<sub>" + $desc + "</sub><br>" +
-            (if $topics != "" then $topics else (if $lang != "" then "<code>" + $lang + "</code>" else "" end) end) + "<br><br>"
+            "### 📌 [" + $name + "](" + $url + ")\n" +
+            "> " + $desc + "\n\n" +
+            (if $lang != "" then "🔹 **" + $lang + "** " else "" end) +
+            (if $stars > 0 then "⭐ " + ($stars|tostring) + " " else "" end) +
+            (if $topics != "" then " • " + $topics else "" end) + "\n\n---"
           ' > /tmp/pinned_block.md
 
-          # 4. Badges d'en-tête
+          # 5. Badges d'en-tête centrés
           cat > /tmp/stats_block.md <<EOF
-          ![Followers](https://img.shields.io/badge/Followers-${FOLLOWERS}-black?style=for-the-badge&labelColor=white)
-          ![Public Repos](https://img.shields.io/badge/Public%20Repos-${PUBLIC_REPOS}-black?style=for-the-badge&labelColor=white)
-          ![Public Gists](https://img.shields.io/badge/Public%20Gists-${PUBLIC_GISTS}-black?style=for-the-badge&labelColor=white)
-          ![Total Stars](https://img.shields.io/badge/Total%20Stars-${TOTAL_STARS}-black?style=for-the-badge&labelColor=white)
+          <p align="center">
+            <img src="https://img.shields.io/badge/Followers-${FOLLOWERS}-000000?style=for-the-badge&logo=github&logoColor=white" />
+            <img src="https://img.shields.io/badge/Public_Repos-${PUBLIC_REPOS}-000000?style=for-the-badge&logo=git&logoColor=white" />
+            <img src="https://img.shields.io/badge/Public_Gists-${PUBLIC_GISTS}-000000?style=for-the-badge&logo=github&logoColor=white" />
+            <img src="https://img.shields.io/badge/Total_Stars-${TOTAL_STARS}-000000?style=for-the-badge&logo=readdotcv&logoColor=white" />
+          </p>
           EOF
 
-          cd $GITHUB_WORKSPACE
+          cd "$GITHUB_WORKSPACE"
 
-          # Injecte STATS
-          awk '
-            BEGIN {inblock=0}
-            /<!-- STATS:START -->/ {print; system("cat /tmp/stats_block.md"); inblock=1; next}
-            /<!-- STATS:END -->/ {inblock=0; print; next}
-            !inblock {print}
-          ' README.md > README.tmp && mv README.tmp README.md
+          # 6. Remplacement atomique dans le README
+          inject_block() {
+            local tag="$1"
+            local file="$2"
+            awk -v marker="$tag" -v datafile="$file" '
+              $0 ~ "<!-- " marker ":START -->" {
+                print
+                while ((getline line < datafile) > 0) print line
+                close(datafile)
+                skip=1
+                next
+              }
+              $0 ~ "<!-- " marker ":END -->" { skip=0 }
+              !skip { print }
+            ' README.md > README.tmp && mv README.tmp README.md
+          }
 
-          # Injecte PINNED
-          awk '
-            BEGIN {inblock=0}
-            /<!-- PINNED:START -->/ {print; system("cat /tmp/pinned_block.md"); inblock=1; next}
-            /<!-- PINNED:END -->/ {inblock=0; print; next}
-            !inblock {print}
-          ' README.md > README.tmp && mv README.tmp README.md
+          inject_block "STATS" "/tmp/stats_block.md"
+          inject_block "PINNED" "/tmp/pinned_block.md"
+          inject_block "LANG_LINES" "/tmp/lang_table.md"
 
-          # Injecte LANG_LINES
-          awk -v table="$LANG_TABLE" '
-            BEGIN {inblock=0}
-            /<!-- LANG_LINES:START -->/ {print; print table; inblock=1; next}
-            /<!-- LANG_LINES:END -->/ {inblock=0; print; next}
-            !inblock {print}
-          ' README.md > README.tmp && mv README.tmp README.md
-
-      - name: Commit changes
+      - name: Commit and push changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add README.md
-          git diff --cached --quiet || git commit -m "chore: update pinned projects and language stats"
+          git diff --staged --quiet || git commit -m "chore(stats): update profile metrics and pinned projects"
           git push
