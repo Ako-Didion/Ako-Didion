@@ -51,21 +51,21 @@ jobs:
             --exclude-ext=lock,min.js,min.css \
             > /tmp/cloc.json || echo "{}" > /tmp/cloc.json
 
-          # 3. Tableau des langages
+          # 3. Tableau des langages en HTML pour un affichage parfait dans <td>
+          echo "<table><thead><tr><th>Langage</th><th align=\"right\">Lignes</th></tr></thead><tbody>" > /tmp/lang_table.md
           jq -r '
             to_entries
             | map(select(.key != "header" and .key != "SUM" and .key != "YAML" and .key != "JSON" and .key != "Markdown" and .key != "Text" and .key != "XML" and .key != "SVG"))
             | sort_by(.value.code) | reverse
-            | .[:8]
-            | (["| Langage | Lignes de code |", "|:---|---:|"] + 
-              map("| **" + .key + "** | " + ((.value.code // 0)|tostring) + " |"))
-            | .[]
-          ' /tmp/cloc.json > /tmp/lang_table.md || echo "Aucune donnée disponible" > /tmp/lang_table.md
+            | .[:8][]
+            | "<tr><td><b>" + .key + "</b></td><td align=\"right\">" + ((.value.code // 0)|tostring) + "</td></tr>"
+          ' /tmp/cloc.json >> /tmp/lang_table.md
+          echo "</tbody></table>" >> /tmp/lang_table.md
 
-          # 4. Projets épinglés via GraphQL
-          PINNED_JSON=$(gh api graphql -F username="${USERNAME}" -f query='
-          query($username: String!) {
-            user(login: $username) {
+          # 4. Projets épinglés (GraphQL)
+          PINNED_JSON=$(gh api graphql -f query='
+          query {
+            user(login: "'"${USERNAME}"'") {
               pinnedItems(first: 6, types: REPOSITORY) {
                 nodes {
                   ... on Repository {
@@ -74,7 +74,7 @@ jobs:
                     description
                     stargazers { totalCount }
                     primaryLanguage { name }
-                    repositoryTopics(first: 4) {
+                    repositoryTopics(first: 3) {
                       nodes { topic { name } }
                     }
                   }
@@ -84,19 +84,16 @@ jobs:
           }' || echo '{"data":{"user":{"pinnedItems":{"nodes":[]}}}}')
 
           echo "$PINNED_JSON" | jq -r '
-            .data.user.pinnedItems.nodes[] |
+            .data.user.pinnedItems.nodes[]? |
             .name as $name |
             .url as $url |
             (.description // "Aucune description") as $desc |
             (.primaryLanguage.name // "") as $lang |
-            (.stargazers.totalCount // 0) as $stars |
             ([.repositoryTopics.nodes[].topic.name] | map("<code>" + . + "</code>") | join(" ")) as $topics |
-            "### 📌 [" + $name + "](" + $url + ")\n" +
-            "> " + $desc + "\n\n" +
-            (if $lang != "" then "🔹 **" + $lang + "** " else "" end) +
-            (if $stars > 0 then "⭐ " + ($stars|tostring) + " " else "" end) +
-            (if $topics != "" then " • " + $topics else "" end) + "\n\n---"
-          ' > /tmp/pinned_block.md || echo "" > /tmp/pinned_block.md
+            "🔹 <b><a href=\"" + $url + "\">" + $name + "</a></b><br>" +
+            "<sub>" + $desc + "</sub><br>" +
+            (if $topics != "" then $topics else (if $lang != "" then "<code>" + $lang + "</code>" else "" end) end) + "<br><br>"
+          ' > /tmp/pinned_block.md
 
           # 5. Badges
           cat > /tmp/stats_block.md <<EOF
