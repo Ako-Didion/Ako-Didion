@@ -27,12 +27,10 @@
 ![Pandas](https://img.shields.io/badge/Pandas-%23000000.svg?style=for-the-badge&logo=pandas&logoColor=white)
 
 ### Outils, Cloud & Design
-![Git](https://img.shields.io/badge/Git-%23000000.svg?style=for-the-badge&logo=git&logoColor=white) 
 ![GitHub](https://img.shields.io/badge/GitHub-%23000000.svg?style=for-the-badge&logo=github&logoColor=white) 
 ![Docker](https://img.shields.io/badge/Docker-%23000000.svg?style=for-the-badge&logo=docker&logoColor=white)
-![OVH](https://img.shields.io/badge/OVH-%23000000.svg?style=for-the-badge&logo=ovh&logoColor=white) 
 ![Figma](https://img.shields.io/badge/Figma-%23000000.svg?style=for-the-badge&logo=figma&logoColor=white) 
-![Photoshop](https://img.shields.io/badge/Photoshop-%23000000.svg?style=for-the-badge&logo=adobe%20photoshop&logoColor=white)
+![Photoshop](https://img.shields.io/badge/Photoshop-%23000000.svg?style=for-the-badge&logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPjxwYXRoIGQ9Ik0zIDRoNS44YzUuMSAwIDggMi41IDggNi44IDAgNC42LTMuMiA2LjktOC4xIDYuOUg3djUuOUgzVjR6bTQgOS4yaDEuNmMzIDAgNC43LTEuMyA0LjctMy42IDAtMi41LTEuNy0zLjUtNC43LTMuNUg3djcuMXptMTAuMyA3LjZjLTEuNSAwLTIuOC0uNi0zLjYtMS4ybC44LTIuNGMxIC42IDIuMSAxIDMuMiAxIDEuMiAwIDEuOC0uNSAxLjgtMS4yIDAtMS45LTQuOC0xLjQtNC44LTRjMC0xLjkgMS41LTMuMiA0LTMuMiAxLjIgMCAyLjQuMyAzLjEuN2wtLjggMi40Yy0uNy0uMy0xLjctLjYtMi40LS42LTEuMSAwLTEuNi41LTEuNiAxLjEgMCAyIDQuOSAxLjQgNC45IDQgMCAyLjEtMS44IDMuMi00LjQgMy4yIi8+PC9zdmc+&logoColor=white)
 
 <br><br>
 
