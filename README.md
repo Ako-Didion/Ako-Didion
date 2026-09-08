@@ -62,41 +62,36 @@
 
 <br><br>
 
-<!-- Projets Épinglés & Répartition -->
-<table width="100%">
-<tr>
-<th width="50%" align="center"><h3>📌 Projets Épinglés</h3></th>
-<th width="50%" align="center"><h3>📊 Répartition des Langages</h3></th>
-</tr>
-<tr>
-<td width="50%" valign="top">
-
 <!-- PINNED:START -->
-<p>🔹 <b><a href="https://github.com/Ako-Didion/dangobot">dangobot</a></b><br><sub>V1 d&apos;un petit osu bot discord</sub><br><code>TypeScript</code></p>
-<p>🔹 <b><a href="https://github.com/Ako-Didion/SAE-2.04">SAE-2.04</a></b><br><sub>Aucune description</sub><br></p>
-<p>🔹 <b><a href="https://github.com/Ako-Didion/portfolio">portfolio</a></b><br><sub>création d&apos;un portfolio pour mettre en avant mes atouts en html,etc....</sub><br><code>HTML</code></p>
-<p>🔹 <b><a href="https://github.com/Ako-Didion/Mood_dle">Mood_dle</a></b><br><sub>Ce script Python utilise Selenium pour automatiser la connexion et le téléchargement des supports de cours (fichiers PDF) depuis la plateforme FOAD de l&apos;Université de Rennes.</sub><br><code>Python</code></p>
-<p>🔹 <b><a href="https://github.com/Ako-Didion/LOLWATCHER">LOLWATCHER</a></b><br><sub>&quot;Un dashboard minimaliste dédié à l&apos;analyse de vos performances sur League of Legends.&quot;</sub><br><code>Python</code></p>
-<!-- PINNED:END -->
-
-</td>
-<td width="50%" valign="top">
-
-<!-- LANG_LINES:START -->
-<table><thead><tr><th>Langage</th><th align="right">Lignes</th></tr></thead><tbody>
-<tr><td><b>C</b></td><td align="right">1260</td></tr>
-<tr><td><b>CSS</b></td><td align="right">760</td></tr>
-<tr><td><b>HTML</b></td><td align="right">493</td></tr>
-<tr><td><b>Python</b></td><td align="right">377</td></tr>
-<tr><td><b>TypeScript</b></td><td align="right">371</td></tr>
-<tr><td><b>JavaScript</b></td><td align="right">137</td></tr>
-<tr><td><b>Dockerfile</b></td><td align="right">28</td></tr>
-<tr><td><b>Bourne Shell</b></td><td align="right">1</td></tr>
-</tbody></table>
-<!-- LANG_LINES:END -->
-
-</td>
-</tr>
+<table width="100%">
+  <tr>
+    <td width="70%" valign="top">
+      🔹 <b><a href="https://github.com/Ako-Didion/dangobot">dangobot</a></b><br>
+      <sub>V1 d'un petit bot discord osu!</sub>
+    </td>
+    <td width="30%" align="right" valign="middle">
+      <code>TypeScript</code> <code>JavaScript</code>
+    </td>
+  </tr>
+  <tr>
+    <td width="70%" valign="top">
+      🔹 <b><a href="https://github.com/Ako-Didion/Mood_dle">Mood_dle</a></b><br>
+      <sub>Script Python automatisant la connexion et le téléchargement des cours.</sub>
+    </td>
+    <td width="30%" align="right" valign="middle">
+      <code>Python</code>
+    </td>
+  </tr>
+  <tr>
+    <td width="70%" valign="top">
+      🔹 <b><a href="https://github.com/Ako-Didion/LOLWATCHER">LOLWATCHER</a></b><br>
+      <sub>Dashboard dédié à l'analyse de vos performances sur LoL.</sub>
+    </td>
+    <td width="30%" align="right" valign="middle">
+      <code>Python</code> <code>HTML</code>
+    </td>
+  </tr>
 </table>
+<!-- PINNED:END -->
 
 </div>
