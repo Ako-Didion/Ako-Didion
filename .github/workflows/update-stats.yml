@@ -61,7 +61,7 @@ jobs:
           ' /tmp/cloc.json >> /tmp/lang_table.md
           echo "</tbody></table>" >> /tmp/lang_table.md
 
-          # 3. Projets récents avec technos alignees a droite
+          # 3. Projets récents avec technos alignées sur le côté droit
           echo '<table width="100%">' > /tmp/pinned_block.md
 
           TOP_REPOS=$(echo "$REPOS_JSON" | jq -c '
@@ -90,33 +90,33 @@ jobs:
             fi
 
             cat <<EOF >> /tmp/pinned_block.md
-  <tr>
-    <td width="70%" valign="top" align="left">
-      🔹 <b><a href="${HTML_URL}">${NAME}</a></b><br>
-      <sub>${DESC}</sub>
-    </td>
-    <td width="30%" align="right" valign="middle">
-      ${TECH_BADGES}
-    </td>
-  </tr>
-EOF
-          done <<< "$TOP_REPOS"
-
-          echo '</table>' >> /tmp/pinned_block.md
-
-          # 4. Badges de profil
-          cat > /tmp/stats_block.md <<EOF
-<p align="center">
-  <img src="https://img.shields.io/badge/Followers-${FOLLOWERS}-000000?style=for-the-badge&logo=github&logoColor=white" />
-  <img src="https://img.shields.io/badge/Public_Repos-${PUBLIC_REPOS}-000000?style=for-the-badge&logo=git&logoColor=white" />
-  <img src="https://img.shields.io/badge/Public_Gists-${PUBLIC_GISTS}-000000?style=for-the-badge&logo=github&logoColor=white" />
-  <img src="https://img.shields.io/badge/Total_Stars-${TOTAL_STARS}-000000?style=for-the-badge&logo=readdotcv&logoColor=white" />
-</p>
-EOF
+            <tr>
+              <td width="65%" valign="top" align="left">
+                🔹 <b><a href="${HTML_URL}">${NAME}</a></b><br>
+                <sub>${DESC}</sub>
+              </td>
+              <td width="35%" align="right" valign="middle">
+                ${TECH_BADGES}
+              </td>
+            </tr>
+          EOF
+                    done <<< "$TOP_REPOS"
+          
+                    echo '</table>' >> /tmp/pinned_block.md
+          
+                    # 4. Badges de statistiques globales
+                    cat > /tmp/stats_block.md <<EOF
+          <p align="center">
+            <img src="https://img.shields.io/badge/Followers-${FOLLOWERS}-000000?style=for-the-badge&logo=github&logoColor=white" />
+            <img src="https://img.shields.io/badge/Public_Repos-${PUBLIC_REPOS}-000000?style=for-the-badge&logo=git&logoColor=white" />
+            <img src="https://img.shields.io/badge/Public_Gists-${PUBLIC_GISTS}-000000?style=for-the-badge&logo=github&logoColor=white" />
+            <img src="https://img.shields.io/badge/Total_Stars-${TOTAL_STARS}-000000?style=for-the-badge&logo=readdotcv&logoColor=white" />
+          </p>
+          EOF
 
           cd "$GITHUB_WORKSPACE"
 
-          # 5. Injection propre dans le README
+          # 5. Remplacement précis dans README.md
           replace_block() {
             local tag="$1"
             local file="$2"
