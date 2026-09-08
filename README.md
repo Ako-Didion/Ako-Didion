@@ -64,11 +64,11 @@
       <td width="50%" valign="top" align="left">
         <br>
         <!-- PINNED:START -->
-<p><img align="right" src="https://img.shields.io/badge/YAML-5577_LIGNES-000000?style=for-the-badge&logoColor=white&labelColor=000000&color=000000" alt="tech" />🔹 <b><a href="https://github.com/Ako-Didion/dangobot">dangobot</a></b><br><sub>V1 d'un petit osu bot discord</sub></p>
+<p><img align="right" src="https://img.shields.io/badge/TYPESCRIPT%0A-000000?style=for-the-badge&logoColor=white&labelColor=000000&color=000000" alt="tech" />🔹 <b><a href="https://github.com/Ako-Didion/dangobot">dangobot</a></b><br><sub>V1 d'un petit osu bot discord</sub></p>
 <p>🔹 <b><a href="https://github.com/Ako-Didion/SAE-2.04">SAE-2.04</a></b><br><sub>Aucune description</sub></p>
-<p><img align="right" src="https://img.shields.io/badge/CSS-569_LIGNES-000000?style=for-the-badge&logoColor=white&labelColor=000000&color=000000" alt="tech" />🔹 <b><a href="https://github.com/Ako-Didion/portfolio">portfolio</a></b><br><sub>création d'un portfolio pour mettre en avant mes atouts en html,etc....</sub></p>
-<p><img align="right" src="https://img.shields.io/badge/TEXT-291_LIGNES-000000?style=for-the-badge&logoColor=white&labelColor=000000&color=000000" alt="tech" />🔹 <b><a href="https://github.com/Ako-Didion/Mood_dle">Mood_dle</a></b><br><sub>Ce script Python utilise Selenium pour automatiser la connexion et le téléchargement des supports de cours (fichiers PDF) depuis la plateforme FOAD de l'Université de Rennes.</sub></p>
-<p><img align="right" src="https://img.shields.io/badge/JSON-1037_LIGNES-000000?style=for-the-badge&logoColor=white&labelColor=000000&color=000000" alt="tech" />🔹 <b><a href="https://github.com/Ako-Didion/LOLWATCHER">LOLWATCHER</a></b><br><sub>"Un dashboard minimaliste dédié à l'analyse de vos performances sur League of Legends."</sub></p>
+<p><img align="right" src="https://img.shields.io/badge/HTML%0A-000000?style=for-the-badge&logoColor=white&labelColor=000000&color=000000" alt="tech" />🔹 <b><a href="https://github.com/Ako-Didion/portfolio">portfolio</a></b><br><sub>création d'un portfolio pour mettre en avant mes atouts en html,etc....</sub></p>
+<p><img align="right" src="https://img.shields.io/badge/PYTHON%0A-000000?style=for-the-badge&logoColor=white&labelColor=000000&color=000000" alt="tech" />🔹 <b><a href="https://github.com/Ako-Didion/Mood_dle">Mood_dle</a></b><br><sub>Ce script Python utilise Selenium pour automatiser la connexion et le téléchargement des supports de cours (fichiers PDF) depuis la plateforme FOAD de l'Université de Rennes.</sub></p>
+<p><img align="right" src="https://img.shields.io/badge/PYTHON%0A-000000?style=for-the-badge&logoColor=white&labelColor=000000&color=000000" alt="tech" />🔹 <b><a href="https://github.com/Ako-Didion/LOLWATCHER">LOLWATCHER</a></b><br><sub>"Un dashboard minimaliste dédié à l'analyse de vos performances sur League of Legends."</sub></p>
         <!-- PINNED:END -->
         <br>
       </td>
