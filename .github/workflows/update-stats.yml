@@ -27,7 +27,7 @@ jobs:
 
           AUTH_HEADER="Authorization: Bearer ${GITHUB_TOKEN}"
 
-          # 1. Infos utilisateur & stats générales
+          # 1. Infos utilisateur & stats generales
           USER_JSON=$(curl -s -H "$AUTH_HEADER" "https://api.github.com/users/${USERNAME}")
           FOLLOWERS=$(echo "$USER_JSON" | jq -r '.followers // 0')
           PUBLIC_REPOS=$(echo "$USER_JSON" | jq -r '.public_repos // 0')
@@ -36,33 +36,8 @@ jobs:
           REPOS_JSON=$(curl -s -H "$AUTH_HEADER" "https://api.github.com/users/${USERNAME}/repos?per_page=100&type=owner")
           TOTAL_STARS=$(echo "$REPOS_JSON" | jq '[.[].stargazers_count] | add // 0')
 
-          # 2. Analyse globale des lignes de code via cloc
-          mkdir -p /tmp/all_repos
-          cd /tmp/all_repos
-
-          REPO_URLS=$(echo "$REPOS_JSON" | jq -r '.[] | select(.fork == false) | .clone_url')
-          for url in $REPO_URLS; do
-            git clone --depth=1 --single-branch "$url" 2>/dev/null || true
-          done
-
-          cloc . --json --quiet \
-            --exclude-dir=node_modules,vendor,.git,dist,build,target,coverage,out \
-            --exclude-ext=lock,min.js,min.css \
-            > /tmp/cloc.json || echo "{}" > /tmp/cloc.json
-
-          # Tableau HTML global avec badges Shields pour les lignes
-          echo '<table width="100%"><thead><tr><th align="left">Langage</th><th align="right">Lignes</th></tr></thead><tbody>' > /tmp/lang_table.md
-          jq -r '
-            to_entries
-            | map(select(.key != "header" and .key != "SUM" and .key != "YAML" and .key != "JSON" and .key != "Markdown" and .key != "Text" and .key != "XML" and .key != "SVG"))
-            | sort_by(.value.code) | reverse
-            | .[:8][]
-            | "<tr><td><b>" + .key + "</b></td><td align=\"right\"><img src=\"https://img.shields.io/badge/" + (.value.code|tostring) + "_lignes-000000?style=flat-square&labelColor=white&color=black\" alt=\"lines\" /></td></tr>"
-          ' /tmp/cloc.json >> /tmp/lang_table.md
-          echo "</tbody></table>" >> /tmp/lang_table.md
-
-          # 3. Projets récents avec Badges Shields.io (Langage + Taille/Lignes) à droite
-          echo '<table width="100%">' > /tmp/pinned_block.md
+          # 2. Projets recents avec align="right" et nombre de lignes (sans tableau interne)
+          > /tmp/pinned_block.md
 
           TOP_REPOS=$(echo "$REPOS_JSON" | jq -c '
             map(select(.fork == false and .name != "'"${USERNAME}"'"))
@@ -76,62 +51,56 @@ jobs:
             NAME=$(echo "$repo" | jq -r '.name')
             HTML_URL=$(echo "$repo" | jq -r '.html_url')
             DESC=$(echo "$repo" | jq -r '.description // "Aucune description"' | sed 's/"/\\"/g')
+            CLONE_URL=$(echo "$repo" | jq -r '.clone_url')
 
-            # Récupère la répartition des octets/lignes par langage
-            LANGS_JSON=$(curl -s -H "$AUTH_HEADER" "https://api.github.com/repos/${USERNAME}/${NAME}/languages")
+            TMP_DIR=$(mktemp -d)
+            git clone --depth=1 --single-branch "$CLONE_URL" "$TMP_DIR" 2>/dev/null || true
 
-            # Construit les badges Shields.io pour les 2 langages dominants du repo
-            BADGES=$(echo "$LANGS_JSON" | jq -r '
+            TOP_LANG=$(cloc "$TMP_DIR" --json --quiet \
+              --exclude-dir=node_modules,vendor,.git,dist,build,target,coverage,out \
+              --exclude-ext=lock,min.js,min.css 2>/dev/null | jq -r '
               to_entries
-              | sort_by(.value) | reverse
-              | .[:2][]
-              | [
-                  (.key | @uri),
-                  (if .value >= 1000000 then ((.value / 1000000 | floor | tostring) + "M")
-                   elif .value >= 1000 then ((.value / 1000 | floor | tostring) + "k")
-                   else (.value | tostring) end)
-                ]
-              | "<img src=\"https://img.shields.io/badge/" + .[0] + "-" + .[1] + "-000000?style=flat-square&labelColor=white&color=black\" alt=\"" + .[0] + "\" /> "
-            ' 2>/dev/null | tr -d '\n')
+              | map(select(.key != "header" and .key != "SUM"))
+              | sort_by(.value.code) | reverse
+              | .[0] // empty
+              | (.key | ascii_upcase | @uri) + "-" + ((.value.code // 0)|tostring) + "_LIGNES"
+            ')
 
-            # Repli si aucun détail de langage n'est disponible
-            if [ -z "$BADGES" ]; then
-              DEFAULT_LANG=$(echo "$repo" | jq -r '.language // empty')
+            rm -rf "$TMP_DIR"
+
+            if [ -n "$TOP_LANG" ]; then
+              BADGE="<img align=\"right\" src=\"https://img.shields.io/badge/${TOP_LANG}-000000?style=for-the-badge&logoColor=white&labelColor=000000&color=000000\" alt=\"tech\" />"
+            else
+              DEFAULT_LANG=$(echo "$repo" | jq -r '.language // empty' | tr '[:lower:]' '[:upper:]')
               if [ -n "$DEFAULT_LANG" ]; then
-                BADGES="<img src=\"https://img.shields.io/badge/${DEFAULT_LANG}-000000?style=flat-square&labelColor=white&color=black\" alt=\"${DEFAULT_LANG}\" />"
+                BADGE="<img align=\"right\" src=\"https://img.shields.io/badge/${DEFAULT_LANG}-000000?style=for-the-badge&logoColor=white&labelColor=000000&color=000000\" alt=\"tech\" />"
               else
-                BADGES="-"
+                BADGE=""
               fi
             fi
 
             cat <<EOF >> /tmp/pinned_block.md
-            <tr>
-              <td width="60%" valign="top" align="left">
-                🔹 <b><a href="${HTML_URL}">${NAME}</a></b><br>
-                <sub>${DESC}</sub>
-              </td>
-              <td width="40%" align="right" valign="middle">
-                ${BADGES}
-              </td>
-            </tr>
+                  <p>
+                    ${BADGE}
+                    &nbsp;🔹 <b><a href="${HTML_URL}">${NAME}</a></b><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<sub>${DESC}</sub>
+                  </p>
+                  <br>
           EOF
           done <<< "$TOP_REPOS"
 
-          echo '</table>' >> /tmp/pinned_block.md
-
-          # 4. Badges du profil
+          # 3. Badges des statistiques globales (noir uni)
           cat > /tmp/stats_block.md <<EOF
-          <p align="center">
-            <img src="https://img.shields.io/badge/Followers-${FOLLOWERS}-000000?style=for-the-badge&logo=github&logoColor=white" />
-            <img src="https://img.shields.io/badge/Public_Repos-${PUBLIC_REPOS}-000000?style=for-the-badge&logo=git&logoColor=white" />
-            <img src="https://img.shields.io/badge/Public_Gists-${PUBLIC_GISTS}-000000?style=for-the-badge&logo=github&logoColor=white" />
-            <img src="https://img.shields.io/badge/Total_Stars-${TOTAL_STARS}-000000?style=for-the-badge&logo=readdotcv&logoColor=white" />
-          </p>
+          <img src="https://img.shields.io/badge/FOLLOWERS-${FOLLOWERS}-000000?style=for-the-badge&logo=github&logoColor=white&color=000000&labelColor=000000" alt="Followers" />
+          <img src="https://img.shields.io/badge/PUBLIC_REPOS-${PUBLIC_REPOS}-000000?style=for-the-badge&logo=git&logoColor=white&color=000000&labelColor=000000" alt="Public Repos" />
+          <br>
+          <img src="https://img.shields.io/badge/PUBLIC_GISTS-${PUBLIC_GISTS}-000000?style=for-the-badge&logo=github&logoColor=white&color=000000&labelColor=000000" alt="Public Gists" />
+          <img src="https://img.shields.io/badge/TOTAL_STARS-${TOTAL_STARS}-000000?style=for-the-badge&logo=readdotcv&logoColor=white&color=000000&labelColor=000000" alt="Total Stars" />
           EOF
 
           cd "$GITHUB_WORKSPACE"
 
-          # 5. Injection dans le README
+          # 4. Injection propre dans le README.md
           replace_block() {
             local tag="$1"
             local file="$2"
@@ -144,7 +113,6 @@ jobs:
 
           replace_block "STATS" "/tmp/stats_block.md"
           replace_block "PINNED" "/tmp/pinned_block.md"
-          replace_block "LANG_LINES" "/tmp/lang_table.md"
 
       - name: Commit and push changes
         run: |
