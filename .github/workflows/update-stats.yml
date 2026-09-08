@@ -21,102 +21,93 @@ jobs:
           USERNAME: Ako-Didion
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -e
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq jq cloc
-
-          AUTH_HEADER="Authorization: Bearer ${GITHUB_TOKEN}"
-
-          # 1. Infos utilisateur & stats generales
-          USER_JSON=$(curl -s -H "$AUTH_HEADER" "https://api.github.com/users/${USERNAME}")
-          FOLLOWERS=$(echo "$USER_JSON" | jq -r '.followers // 0')
-          PUBLIC_REPOS=$(echo "$USER_JSON" | jq -r '.public_repos // 0')
-          PUBLIC_GISTS=$(echo "$USER_JSON" | jq -r '.public_gists // 0')
-
-          REPOS_JSON=$(curl -s -H "$AUTH_HEADER" "https://api.github.com/users/${USERNAME}/repos?per_page=100&type=owner")
-          TOTAL_STARS=$(echo "$REPOS_JSON" | jq '[.[].stargazers_count] | add // 0')
-
-          # 2. Projets recents avec align="right" et nombre de lignes (sans tableau interne)
-          > /tmp/pinned_block.md
-
-          TOP_REPOS=$(echo "$REPOS_JSON" | jq -c '
-            map(select(.fork == false and .name != "'"${USERNAME}"'"))
-            | sort_by(.pushed_at) | reverse
-            | .[:5][]
-          ')
-
-          while IFS= read -r repo; do
-            [ -z "$repo" ] && continue
-
-            NAME=$(echo "$repo" | jq -r '.name')
-            HTML_URL=$(echo "$repo" | jq -r '.html_url')
-            DESC=$(echo "$repo" | jq -r '.description // "Aucune description"' | sed 's/"/\\"/g')
-            CLONE_URL=$(echo "$repo" | jq -r '.clone_url')
-
-            TMP_DIR=$(mktemp -d)
-            git clone --depth=1 --single-branch "$CLONE_URL" "$TMP_DIR" 2>/dev/null || true
-
-            TOP_LANG=$(cloc "$TMP_DIR" --json --quiet \
-              --exclude-dir=node_modules,vendor,.git,dist,build,target,coverage,out \
-              --exclude-ext=lock,min.js,min.css 2>/dev/null | jq -r '
-              to_entries
-              | map(select(.key != "header" and .key != "SUM"))
-              | sort_by(.value.code) | reverse
-              | .[0] // empty
-              | (.key | ascii_upcase | @uri) + "-" + ((.value.code // 0)|tostring) + "_LIGNES"
+            set -e
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq jq cloc
+  
+            AUTH_HEADER="Authorization: Bearer ${GITHUB_TOKEN}"
+  
+            # 1. Infos utilisateur & stats generales
+            USER_JSON=$(curl -s -H "$AUTH_HEADER" "https://api.github.com/users/${USERNAME}")
+            FOLLOWERS=$(echo "$USER_JSON" | jq -r '.followers // 0')
+            PUBLIC_REPOS=$(echo "$USER_JSON" | jq -r '.public_repos // 0')
+            PUBLIC_GISTS=$(echo "$USER_JSON" | jq -r '.public_gists // 0')
+  
+            REPOS_JSON=$(curl -s -H "$AUTH_HEADER" "https://api.github.com/users/${USERNAME}/repos?per_page=100&type=owner")
+            TOTAL_STARS=$(echo "$REPOS_JSON" | jq '[.[].stargazers_count] | add // 0')
+  
+            # 2. Projets recents
+            > /tmp/pinned_block.md
+  
+            TOP_REPOS=$(echo "$REPOS_JSON" | jq -c '
+              map(select(.fork == false and .name != "'"${USERNAME}"'"))
+              | sort_by(.pushed_at) | reverse
+              | .[:5][]
             ')
-
-            rm -rf "$TMP_DIR"
-
-            if [ -n "$TOP_LANG" ]; then
-              BADGE="<img align=\"right\" src=\"https://img.shields.io/badge/${TOP_LANG}-000000?style=for-the-badge&logoColor=white&labelColor=000000&color=000000\" alt=\"tech\" />"
-            else
-              DEFAULT_LANG=$(echo "$repo" | jq -r '.language // empty' | tr '[:lower:]' '[:upper:]')
-              if [ -n "$DEFAULT_LANG" ]; then
-                BADGE="<img align=\"right\" src=\"https://img.shields.io/badge/${DEFAULT_LANG}-000000?style=for-the-badge&logoColor=white&labelColor=000000&color=000000\" alt=\"tech\" />"
+  
+            while IFS= read -r repo; do
+              [ -z "$repo" ] && continue
+  
+              NAME=$(echo "$repo" | jq -r '.name')
+              HTML_URL=$(echo "$repo" | jq -r '.html_url')
+              DESC=$(echo "$repo" | jq -r '.description // "Aucune description"' | sed 's/"/\\"/g')
+              CLONE_URL=$(echo "$repo" | jq -r '.clone_url')
+  
+              TMP_DIR=$(mktemp -d)
+              git clone --depth=1 --single-branch "$CLONE_URL" "$TMP_DIR" 2>/dev/null || true
+  
+              TOP_LANG=$(cloc "$TMP_DIR" --json --quiet \
+                --exclude-dir=node_modules,vendor,.git,dist,build,target,coverage,out \
+                --exclude-ext=lock,min.js,min.css 2>/dev/null | jq -r '
+                to_entries
+                | map(select(.key != "header" and .key != "SUM"))
+                | sort_by(.value.code) | reverse
+                | .[0] // empty
+                | (.key | ascii_upcase | @uri) + "-" + ((.value.code // 0)|tostring) + "_LIGNES"
+              ')
+  
+              rm -rf "$TMP_DIR"
+  
+              if [ -n "$TOP_LANG" ]; then
+                BADGE="<img align=\"right\" src=\"https://img.shields.io/badge/${TOP_LANG}-000000?style=for-the-badge&logoColor=white&labelColor=000000&color=000000\" alt=\"tech\" />"
               else
-                BADGE=""
+                DEFAULT_LANG=$(echo "$repo" | jq -r '.language // empty' | tr '[:lower:]' '[:upper:]')
+                if [ -n "$DEFAULT_LANG" ]; then
+                  BADGE="<img align=\"right\" src=\"https://img.shields.io/badge/${DEFAULT_LANG}-000000?style=for-the-badge&logoColor=white&labelColor=000000&color=000000\" alt=\"tech\" />"
+                else
+                  BADGE=""
+                fi
               fi
-            fi
+  
+              cat <<EOF >> /tmp/pinned_block.md
+              <p>${BADGE}🔹 <b><a href="${HTML_URL}">${NAME}</a></b><br><sub>${DESC}</sub></p>
+              EOF
+                        done <<< "$TOP_REPOS"
+  
+            # 3. Badges des statistiques globales
+            cat > /tmp/stats_block.md <<EOF
+            <p align="center"><img src="https://img.shields.io/badge/FOLLOWERS-${FOLLOWERS}-000000?style=for-the-badge&logo=github&logoColor=white&color=000000&labelColor=000000" alt="Followers" /> <img src="https://img.shields.io/badge/PUBLIC_REPOS-${PUBLIC_REPOS}-000000?style=for-the-badge&logo=git&logoColor=white&color=000000&labelColor=000000" alt="Public Repos" /><br><img src="https://img.shields.io/badge/PUBLIC_GISTS-${PUBLIC_GISTS}-000000?style=for-the-badge&logo=github&logoColor=white&color=000000&labelColor=000000" alt="Public Gists" /> <img src="https://img.shields.io/badge/TOTAL_STARS-${TOTAL_STARS}-000000?style=for-the-badge&logo=readdotcv&logoColor=white&color=000000&labelColor=000000" alt="Total Stars" /></p>
+            EOF
+  
+            cd "$GITHUB_WORKSPACE"
+  
+            # 4. Injection propre dans le README.md
+            replace_block() {
+              local tag="$1"
+              local file="$2"
+              awk -v start="<!-- ${tag}:START -->" -v end="<!-- ${tag}:END -->" -v insert="$file" '
+                $0 ~ start { print; system("cat " insert); inblock=1; next }
+                $0 ~ end   { inblock=0; print; next }
+                !inblock   { print }
+              ' README.md > README.tmp && mv README.tmp README.md
+            }
+  
+            replace_block "STATS" "/tmp/stats_block.md"
+            replace_block "PINNED" "/tmp/pinned_block.md"
 
-            cat <<EOF >> /tmp/pinned_block.md
-                  <p>
-                    ${BADGE}
-                    &nbsp;🔹 <b><a href="${HTML_URL}">${NAME}</a></b><br>
-                    &nbsp;&nbsp;&nbsp;&nbsp;<sub>${DESC}</sub>
-                  </p>
-                  <br>
-          EOF
-          done <<< "$TOP_REPOS"
-
-          # 3. Badges des statistiques globales (noir uni)
-          cat > /tmp/stats_block.md <<EOF
-          <img src="https://img.shields.io/badge/FOLLOWERS-${FOLLOWERS}-000000?style=for-the-badge&logo=github&logoColor=white&color=000000&labelColor=000000" alt="Followers" />
-          <img src="https://img.shields.io/badge/PUBLIC_REPOS-${PUBLIC_REPOS}-000000?style=for-the-badge&logo=git&logoColor=white&color=000000&labelColor=000000" alt="Public Repos" />
-          <br>
-          <img src="https://img.shields.io/badge/PUBLIC_GISTS-${PUBLIC_GISTS}-000000?style=for-the-badge&logo=github&logoColor=white&color=000000&labelColor=000000" alt="Public Gists" />
-          <img src="https://img.shields.io/badge/TOTAL_STARS-${TOTAL_STARS}-000000?style=for-the-badge&logo=readdotcv&logoColor=white&color=000000&labelColor=000000" alt="Total Stars" />
-          EOF
-
-          cd "$GITHUB_WORKSPACE"
-
-          # 4. Injection propre dans le README.md
-          replace_block() {
-            local tag="$1"
-            local file="$2"
-            awk -v start="<!-- ${tag}:START -->" -v end="<!-- ${tag}:END -->" -v insert="$file" '
-              $0 ~ start { print; system("cat " insert); inblock=1; next }
-              $0 ~ end   { inblock=0; print; next }
-              !inblock   { print }
-            ' README.md > README.tmp && mv README.tmp README.md
-          }
-
-          replace_block "STATS" "/tmp/stats_block.md"
-          replace_block "PINNED" "/tmp/pinned_block.md"
-
-      - name: Commit and push changes
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add README.md
-          git diff --staged --quiet || (git commit -m "chore(stats): update profile metrics" && git push)
+            - name: Commit and push changes
+            run: |
+              git config user.name "github-actions[bot]"
+              git config user.email "github-actions[bot]@users.noreply.github.com"
+              git add README.md
+              git diff --staged --quiet || (git commit -m "chore(stats): update profile metrics" && git push)
