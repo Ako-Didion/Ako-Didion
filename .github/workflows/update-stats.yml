@@ -32,6 +32,10 @@ jobs:
           AUTH_HEADER="Authorization: Bearer ${GITHUB_TOKEN}"
           ACCEPT_HEADER="Accept: application/vnd.github+json"
 
+          # Langages "non-code" a ignorer lors du choix du langage principal
+          # (config, donnees, balisage, documentation... pas du vrai code source)
+          NON_CODE_LANGS_JSON='["YAML","JSON","TOML","XML","INI","CSV","Text","Markdown","SVG","Properties","robots.txt","diff","reStructuredText","JSON5","YANG","Windows Resource File","MSBuild script","DOS Batch"]'
+
           # Petite fonction pour appeler l'API et échouer proprement en cas d'erreur HTTP
           gh_api() {
             local url="$1"
@@ -91,9 +95,10 @@ jobs:
 
             TOP_LANG=$(cloc "$TMP_DIR" --json --quiet \
               --exclude-dir=node_modules,vendor,.git,dist,build,target,coverage,out \
-              --exclude-ext=lock,min.js,min.css 2>/dev/null | jq -r '
+              --exclude-ext=lock,min.js,min.css 2>/dev/null | jq -r --argjson excl "$NON_CODE_LANGS_JSON" '
               to_entries
               | map(select(.key != "header" and .key != "SUM"))
+              | map(select(($excl | index(.key)) | not))
               | sort_by(.value.code) | reverse
               | .[0] // empty
               | (.key | ascii_upcase | @uri) + "-" + ((.value.code // 0)|tostring) + "_LIGNES"
@@ -104,6 +109,7 @@ jobs:
             if [ -n "$TOP_LANG" ]; then
               BADGE="<img align=\"right\" src=\"https://img.shields.io/badge/${TOP_LANG}-000000?style=for-the-badge&logoColor=white&labelColor=000000&color=000000\" alt=\"tech\" />"
             else
+              # Repli : langage principal detecte par GitHub (linguist), deja fiable et sans fichiers de config
               DEFAULT_LANG=$(echo "$repo" | jq -r '.language // empty' | tr '[:lower:]' '[:upper:]' | jq -sRr '@uri')
               if [ -n "$DEFAULT_LANG" ]; then
                 BADGE="<img align=\"right\" src=\"https://img.shields.io/badge/${DEFAULT_LANG}-000000?style=for-the-badge&logoColor=white&labelColor=000000&color=000000\" alt=\"tech\" />"
