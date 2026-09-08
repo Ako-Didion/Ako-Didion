@@ -65,30 +65,48 @@
 <!-- PINNED:START -->
 <table width="100%">
   <tr>
-    <td width="70%" valign="top">
+    <td width="65%" valign="top" align="left">
       🔹 <b><a href="https://github.com/Ako-Didion/dangobot">dangobot</a></b><br>
-      <sub>V1 d'un petit bot discord osu!</sub>
+      <sub>V1 d'un petit osu bot discord</sub>
     </td>
-    <td width="30%" align="right" valign="middle">
-      <code>TypeScript</code> <code>JavaScript</code>
+    <td width="35%" align="right" valign="middle">
+      <code>Dockerfile</code> <code>JavaScript</code> <code>TypeScript</code> 
     </td>
   </tr>
   <tr>
-    <td width="70%" valign="top">
+    <td width="65%" valign="top" align="left">
+      🔹 <b><a href="https://github.com/Ako-Didion/SAE-2.04">SAE-2.04</a></b><br>
+      <sub>Aucune description</sub>
+    </td>
+    <td width="35%" align="right" valign="middle">
+      -
+    </td>
+  </tr>
+  <tr>
+    <td width="65%" valign="top" align="left">
+      🔹 <b><a href="https://github.com/Ako-Didion/portfolio">portfolio</a></b><br>
+      <sub>création d'un portfolio pour mettre en avant mes atouts en html,etc....</sub>
+    </td>
+    <td width="35%" align="right" valign="middle">
+      <code>CSS</code> <code>HTML</code> 
+    </td>
+  </tr>
+  <tr>
+    <td width="65%" valign="top" align="left">
       🔹 <b><a href="https://github.com/Ako-Didion/Mood_dle">Mood_dle</a></b><br>
-      <sub>Script Python automatisant la connexion et le téléchargement des cours.</sub>
+      <sub>Ce script Python utilise Selenium pour automatiser la connexion et le téléchargement des supports de cours (fichiers PDF) depuis la plateforme FOAD de l'Université de Rennes.</sub>
     </td>
-    <td width="30%" align="right" valign="middle">
-      <code>Python</code>
+    <td width="35%" align="right" valign="middle">
+      <code>Python</code> 
     </td>
   </tr>
   <tr>
-    <td width="70%" valign="top">
+    <td width="65%" valign="top" align="left">
       🔹 <b><a href="https://github.com/Ako-Didion/LOLWATCHER">LOLWATCHER</a></b><br>
-      <sub>Dashboard dédié à l'analyse de vos performances sur LoL.</sub>
+      <sub>\"Un dashboard minimaliste dédié à l'analyse de vos performances sur League of Legends.\"</sub>
     </td>
-    <td width="30%" align="right" valign="middle">
-      <code>Python</code> <code>HTML</code>
+    <td width="35%" align="right" valign="middle">
+      <code>CSS</code> <code>HTML</code> <code>JavaScript</code> 
     </td>
   </tr>
 </table>
