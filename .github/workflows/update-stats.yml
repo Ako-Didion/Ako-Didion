@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: profile-stats-update
+  cancel-in-progress: false
+
 jobs:
   update-stats:
     runs-on: ubuntu-latest
@@ -21,18 +25,43 @@ jobs:
           USERNAME: Ako-Didion
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-        
-          set -e
+          set -euo pipefail
           sudo apt-get update -qq
           sudo apt-get install -y -qq jq cloc
+
           AUTH_HEADER="Authorization: Bearer ${GITHUB_TOKEN}"
+          ACCEPT_HEADER="Accept: application/vnd.github+json"
+
+          # Petite fonction pour appeler l'API et échouer proprement en cas d'erreur HTTP
+          gh_api() {
+            local url="$1"
+            local http_code
+            http_code=$(curl -s -o /tmp/gh_response.json -w "%{http_code}" -H "$AUTH_HEADER" -H "$ACCEPT_HEADER" "$url")
+            if [ "$http_code" -ge 400 ]; then
+              echo "Erreur API GitHub ($http_code) sur $url" >&2
+              cat /tmp/gh_response.json >&2
+              exit 1
+            fi
+            cat /tmp/gh_response.json
+          }
+
           # 1. Infos utilisateur & stats generales
-          USER_JSON=$(curl -s -H "$AUTH_HEADER" "https://api.github.com/users/${USERNAME}")
+          USER_JSON=$(gh_api "https://api.github.com/users/${USERNAME}")
           FOLLOWERS=$(echo "$USER_JSON" | jq -r '.followers // 0')
           PUBLIC_REPOS=$(echo "$USER_JSON" | jq -r '.public_repos // 0')
           PUBLIC_GISTS=$(echo "$USER_JSON" | jq -r '.public_gists // 0')
 
-          REPOS_JSON=$(curl -s -H "$AUTH_HEADER" "https://api.github.com/users/${USERNAME}/repos?per_page=100&type=owner")
+          # Pagination pour ne pas sous-evaluer le total d'etoiles au-dela de 100 repos
+          REPOS_JSON="[]"
+          page=1
+          while :; do
+            PAGE_JSON=$(gh_api "https://api.github.com/users/${USERNAME}/repos?per_page=100&page=${page}&type=owner")
+            COUNT=$(echo "$PAGE_JSON" | jq 'length')
+            REPOS_JSON=$(jq -s '.[0] + .[1]' <(echo "$REPOS_JSON") <(echo "$PAGE_JSON"))
+            [ "$COUNT" -lt 100 ] && break
+            page=$((page + 1))
+          done
+
           TOTAL_STARS=$(echo "$REPOS_JSON" | jq '[.[].stargazers_count] | add // 0')
 
           # 2. Projets recents
@@ -44,12 +73,17 @@ jobs:
             | .[:5][]
           ')
 
+          # Echappe les caracteres speciaux HTML pour ne pas casser le README
+          html_escape() {
+            sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g'
+          }
+
           while IFS= read -r repo; do
             [ -z "$repo" ] && continue
 
-            NAME=$(echo "$repo" | jq -r '.name')
+            NAME=$(echo "$repo" | jq -r '.name' | html_escape)
             HTML_URL=$(echo "$repo" | jq -r '.html_url')
-            DESC=$(echo "$repo" | jq -r '.description // "Aucune description"' | sed 's/"/\\"/g')
+            DESC=$(echo "$repo" | jq -r '.description // "Aucune description"' | html_escape)
             CLONE_URL=$(echo "$repo" | jq -r '.clone_url')
 
             TMP_DIR=$(mktemp -d)
@@ -63,14 +97,14 @@ jobs:
               | sort_by(.value.code) | reverse
               | .[0] // empty
               | (.key | ascii_upcase | @uri) + "-" + ((.value.code // 0)|tostring) + "_LIGNES"
-            ')
+            ' 2>/dev/null || true)
 
             rm -rf "$TMP_DIR"
 
             if [ -n "$TOP_LANG" ]; then
               BADGE="<img align=\"right\" src=\"https://img.shields.io/badge/${TOP_LANG}-000000?style=for-the-badge&logoColor=white&labelColor=000000&color=000000\" alt=\"tech\" />"
             else
-              DEFAULT_LANG=$(echo "$repo" | jq -r '.language // empty' | tr '[:lower:]' '[:upper:]')
+              DEFAULT_LANG=$(echo "$repo" | jq -r '.language // empty' | tr '[:lower:]' '[:upper:]' | jq -sRr '@uri')
               if [ -n "$DEFAULT_LANG" ]; then
                 BADGE="<img align=\"right\" src=\"https://img.shields.io/badge/${DEFAULT_LANG}-000000?style=for-the-badge&logoColor=white&labelColor=000000&color=000000\" alt=\"tech\" />"
               else
@@ -90,6 +124,12 @@ jobs:
           replace_block() {
             local tag="$1"
             local file="$2"
+
+            if ! grep -q "<!-- ${tag}:START -->" README.md; then
+              echo "Attention : balise <!-- ${tag}:START --> introuvable dans README.md, bloc ${tag} non mis a jour" >&2
+              return
+            fi
+
             awk -v start="<!-- ${tag}:START -->" -v end="<!-- ${tag}:END -->" -v insert="$file" '
               $0 ~ start { print; system("cat " insert); inblock=1; next }
               $0 ~ end   { inblock=0; print; next }
@@ -100,9 +140,10 @@ jobs:
           replace_block "STATS" "/tmp/stats_block.md"
           replace_block "PINNED" "/tmp/pinned_block.md"
 
-          - name: Commit and push changes
-            run: |
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add README.md
-            git diff --staged --quiet || (git commit -m "chore(stats): update profile metrics" && git push)
+      - name: Commit and push changes
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git diff --staged --quiet || (git commit -m "chore(stats): update profile metrics" && git push)
