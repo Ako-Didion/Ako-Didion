@@ -1,7 +1,7 @@
 <div align="center">
 
   <!-- Bannière -->
-  <img width="100%" alt="Bannière du profil GitHub d'Ako-Didion" src="https://github.com/user-attachments/assets/0c3af1c3-e496-4caf-b5c2-54bbb16608b6" />
+  <img width="100%" alt="Bannière du profil GitHub d'Ako-Didion" src="https://images6.alphacoders.com/132/thumb-1920-1322714.jpeg" />
   <!-- Réseaux Sociaux -->
 <a href="https://discord.com/" target="_blank"><img src="https://img.shields.io/badge/DISCORD-COCOLOCO23-000000?style=for-the-badge&logo=discord&logoColor=white&labelColor=000000" alt="Discord" /></a> <a href="https://steamcommunity.com/" target="_blank"><img src="https://img.shields.io/badge/STEAM-AKO-000000?style=for-the-badge&logo=steam&logoColor=white&labelColor=000000" alt="Steam" /></a> <a href="https://youtube.com/" target="_blank"><img src="https://img.shields.io/badge/YOUTUBE-AKKO-000000?style=for-the-badge&logo=youtube&logoColor=white&labelColor=000000" alt="YouTube" /></a>
 
