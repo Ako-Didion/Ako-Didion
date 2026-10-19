@@ -32,48 +32,4 @@
 
   <br><br>
 
-  <table width="100%">
-    <tr>
-      <th width="50%" align="center"><h3>🚀 Statistiques</h3></th>
-      <th width="50%" align="center"><h3>📌 Projets Récents</h3></th>
-    </tr>
-    <tr>
-      <!-- Colonne Gauche : Statistiques (50%) -->
-      <td width="50%" align="center" valign="top">
-        <br>
-        <p><b>📦 Stats du repo <code>dangobot</code></b></p>
-        <img src="https://img.shields.io/badge/STARS-0-000000?style=for-the-badge&logo=github&logoColor=white&labelColor=000000" alt="Stars" />
-        <img src="https://img.shields.io/badge/FORKS-0-000000?style=for-the-badge&logo=github&logoColor=white&labelColor=000000" alt="Forks" />
-        <img src="https://img.shields.io/badge/ISSUES-0_OPEN-000000?style=for-the-badge&logo=github&logoColor=white&labelColor=000000" alt="Issues" />
-        <br>
-        <img src="https://img.shields.io/badge/LAST_COMMIT-YESTERDAY-000000?style=for-the-badge&logo=git&logoColor=white&labelColor=000000" alt="Last Commit" />
-        <img src="https://img.shields.io/badge/REPO_SIZE-109_KIB-000000?style=for-the-badge&labelColor=000000" alt="Repo Size" />
-        <img src="https://img.shields.io/badge/CODE_SIZE-13.6_KIB-000000?style=for-the-badge&labelColor=000000" alt="Code Size" />
-        <br><br>
-        <p><b>🧠 Langages du repo <code>dangobot</code></b></p>
-        <img src="https://img.shields.io/badge/TYPESCRIPT-87.1%25-000000?style=for-the-badge&labelColor=000000" alt="TypeScript" />
-        <img src="https://img.shields.io/badge/LANGUAGES-3-000000?style=for-the-badge&labelColor=000000" alt="Languages" />
-        <br><br>
-        <p><b>🌍 Stats globales</b></p>
-        <!-- STATS:START -->
-<p align="center"><img src="https://img.shields.io/badge/FOLLOWERS-6-000000?style=for-the-badge&logo=github&logoColor=white&color=000000&labelColor=000000" alt="Followers" /> <img src="https://img.shields.io/badge/PUBLIC_REPOS-9-000000?style=for-the-badge&logo=git&logoColor=white&color=000000&labelColor=000000" alt="Public Repos" /><br><img src="https://img.shields.io/badge/PUBLIC_GISTS-0-000000?style=for-the-badge&logo=github&logoColor=white&color=000000&labelColor=000000" alt="Public Gists" /> <img src="https://img.shields.io/badge/TOTAL_STARS-5-000000?style=for-the-badge&logo=readdotcv&logoColor=white&color=000000&labelColor=000000" alt="Total Stars" /></p>
-        <!-- STATS:END -->
-        <br><br>
-      </td>
-      <!-- Colonne Droite : Projets Récents (50% avec léger padding invisible) -->
-      <td width="50%" valign="top" align="left">
-        <br>
-        <!-- PINNED:START -->
-<p><img align="right" src="https://img.shields.io/badge/TYPESCRIPT%0A-000000?style=for-the-badge&logoColor=white&labelColor=000000&color=000000" alt="tech" />🔹 <b><a href="https://github.com/Ako-Didion/dangobot">dangobot</a></b><br><sub>V1 d'un petit osu bot discord</sub></p>
-<p>🔹 <b><a href="https://github.com/Ako-Didion/SAE-2.04">SAE-2.04</a></b><br><sub>Aucune description</sub></p>
-<p><img align="right" src="https://img.shields.io/badge/HTML%0A-000000?style=for-the-badge&logoColor=white&labelColor=000000&color=000000" alt="tech" />🔹 <b><a href="https://github.com/Ako-Didion/portfolio">portfolio</a></b><br><sub>création d'un portfolio pour mettre en avant mes atouts en html,etc....</sub></p>
-<p><img align="right" src="https://img.shields.io/badge/PYTHON%0A-000000?style=for-the-badge&logoColor=white&labelColor=000000&color=000000" alt="tech" />🔹 <b><a href="https://github.com/Ako-Didion/Mood_dle">Mood_dle</a></b><br><sub>Ce script Python utilise Selenium pour automatiser la connexion et le téléchargement des supports de cours (fichiers PDF) depuis la plateforme FOAD de l'Université de Rennes.</sub></p>
-<p><img align="right" src="https://img.shields.io/badge/PYTHON%0A-000000?style=for-the-badge&logoColor=white&labelColor=000000&color=000000" alt="tech" />🔹 <b><a href="https://github.com/Ako-Didion/LOLWATCHER">LOLWATCHER</a></b><br><sub>"Un dashboard minimaliste dédié à l'analyse de vos performances sur League of Legends."</sub></p>
-        <!-- PINNED:END -->
-        <br>
-      </td>
-    </tr>
-  </table>
-
-
 </div>
